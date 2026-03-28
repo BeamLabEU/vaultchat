@@ -14,21 +14,23 @@ The most important for us was to able to run it in the terminal, so we started t
 
 - [oatmeal](https://github.com/dustinblackman/oatmeal) — Another Rust-based solution, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends, they have nice chat bubbles UI. Latest release is v0.13.0, which was on Mar 16, 2024, couple of years ago, so, also abandoned project. Looks like author decided to use fantastic library in the Rust ecosystem [Ratatui](https://ratatui.rs/). 4 pending PRs from 2024 and 2025, so project got abandoned.
 
-And none of these found projects were using Markdown for storing ai chats.
+Unfortunatelly none of these projects we found were using Markdown for storing ai chats.
 
-So essentially we want an LLM TUI that’s vault-native — you run it from within your Obsidian vault, conversations get saved as .md files with proper frontmatter, and they instantly become part of our knowledge graph. Searchable, linkable, taggable. This should open up some powerful possibilities: we could [[link]] to other notes as context, the AI responses become permanent knowledge artifacts, and we could even use Obsidian’s dataview or search to query across all your past conversations. 
+Essentially we want an LLM TUI that’s vault-native — you run it from within your Obsidian vault, conversations get saved as .md files with proper frontmatter, and they instantly become part of our knowledge graph. Searchable, linkable, taggable. This should open up some powerful possibilities: we could [[link]] to other notes as context, the AI responses become permanent knowledge artifacts, and we could even use Obsidian’s dataview or search to query across all your past conversations. 
 
 ## Techstack brainstorming
 
 We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is great for servers and web apps, but for a CLI tool that people brew install or grab a binary — it’s friction. Ratatouille exists but the TUI ecosystem is thin, and Burrito for packaging binaries is still rough. Looks like realistic options for this kind of project:
 
-- [Go] + [Bubble Tea] — probably the sweet spot. The Charm ecosystem is incredible for TUIs (bubbletea, glamour for markdown rendering, lipgloss for styling). Single static binary, cross-compile trivially, brew install ready. This is what most modern TUI tools are built with.
+- [Go](https://go.dev) + [Bubble Tea](https://github.com/charmbracelet/bubbletea) — probably the sweet spot for our usecase. The Charm ecosystem is incredible for TUIs (bubbletea, glamour for markdown rendering, lipgloss for styling). Single static binary, cross-compile trivially, brew install ready. This is what most modern TUI tools are built with.
 
-- [Rust] + [ratatui] — same single-binary advantage, slightly steeper curve, but tenere proves it works well for LLM TUIs.
+- [Rust](https://rust-lang.org/) + [ratatui](https://ratatui.rs/) — same single-binary advantage, slightly steeper curve, but tenere proves it works well for LLM TUIs.
 
-- [Python] + [Textual] — what parllama uses. Easiest to prototype, pip install works, but you know the Python dependency hell story.
+- [Python](https://www.python.org/) + [Textual](https://textual.textualize.io/) — what parllama uses. Easiest to prototype, pip install works, but you know the Python dependency hell story.
 
-AI's honest take is to use Go + Bubble Tea combination, which gives us the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context.
+- [TypeScript](https://www.typescriptlang.org/) + [Ink](https://github.com/vadimdemedes/ink) - Ink’s ecosystem is impressive — it’s basically React for the terminal, so the mental model is familiar to a huge number of developers. And the fact that both Claude Code and Gemini CLI chose it independently is a strong signal. It also has a practical advantage for vaultchat specifically: since OpenRouter and all the LLM APIs have first-class TypeScript/JS SDKs, you’d have zero friction on the provider integration side. Markdown rendering in the terminal is also well-solved in the JS ecosystem (marked, marked-terminal, etc.).
+
+First AI's take is to use Go + Bubble Tea combination, which gives the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context. 
 
 ## Design Principles
 
