@@ -16,6 +16,20 @@ The most important for us was to able to run it in the terminal, so we started t
 
 And none of these found projects were using Markdown for storing ai chats.
 
+So essentially we want an LLM TUI that’s vault-native — you run it from within your Obsidian vault, conversations get saved as .md files with proper frontmatter, and they instantly become part of our knowledge graph. Searchable, linkable, taggable. This should open up some powerful possibilities: we could [[link]] to other notes as context, the AI responses become permanent knowledge artifacts, and we could even use Obsidian’s dataview or search to query across all your past conversations. 
+
+## Techstack brainstorming
+
+We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is great for servers and web apps, but for a CLI tool that people brew install or grab a binary — it’s friction. Ratatouille exists but the TUI ecosystem is thin, and Burrito for packaging binaries is still rough. Looks like realistic options for this kind of project:
+
+- [Go] + [Bubble Tea] — probably the sweet spot. The Charm ecosystem is incredible for TUIs (bubbletea, glamour for markdown rendering, lipgloss for styling). Single static binary, cross-compile trivially, brew install ready. This is what most modern TUI tools are built with.
+
+- [Rust] + [ratatui] — same single-binary advantage, slightly steeper curve, but tenere proves it works well for LLM TUIs.
+
+- [Python] + [Textual] — what parllama uses. Easiest to prototype, pip install works, but you know the Python dependency hell story.
+
+AI's honest take is to use Go + Bubble Tea combination, which gives us the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context.
+
 ## Design Principles
 
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
