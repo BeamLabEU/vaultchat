@@ -1,5 +1,17 @@
 # VaultChat — Conversation File Format Spec
 
+## Original Idea and Motivation
+
+(Open-webui)[https://github.com/open-webui/open-webui] allows chatting with many different models, but works only via browser, idea was to create something similar but tui based. After some brainstorming, idea came to store all ai dialogs in md files (and in obsidian and under git if needed). Want it to be provider-agnostic — so it can talk to Ollama, OpenAI, Anthropic, or anything OpenAI-compatible. And I want to point it at OpenRouter or run local models via Ollama side by side. 
+
+The most important for me was to able to run it in the terminal, started to look around other tui llm chat clients, found these ones:
+- (Elia)[https://github.com/darrenburns/elia] — probably the closest to "Open WebUI for the terminal." It's keyboard-centric, stores conversations in SQLite, supports ChatGPT, Claude, and local models via Ollama. GitHub Built with Textual (Python), has an inline mode so it doesn't go fullscreen, and feels very polished. Would play nicely with your tmux workflow. Last commit was 2 years ago (at least to main branch), and last release 1.10.0 was on Sep 14, 2024, also 2 years ago. Written in Python.
+
+- parllama — the most feature-rich option. Supports OpenAI, Groq, Anthropic, Gemini, xAI, OpenRouter, DeepSeek, LiteLLM, and Ollama. Has dark/light modes, custom themes, prompt library, chat history, chat tabs for multiple models, and you can discover and download Ollama models from within the TUI. Terminal Trove Also built with Textual.
+- tenere — if you want something lean and Rust-based. Vim-style keybindings, supports ChatGPT, llama.cpp, and Ollama backends. GitHub Very minimal, very fast.
+- oatmeal — also Rust-based, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends. GitHub Nice chat bubbles UI.
+
+
 ## Design Principles
 
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
