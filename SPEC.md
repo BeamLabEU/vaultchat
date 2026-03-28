@@ -12,7 +12,7 @@ The most important for us was to able to run it in the terminal, so we started t
 
 - [tenere](https://github.com/pythops/tenere) — Tenere is pretty cool, pretty lean and Rust-based, it also has Vim-style keybindings, supports ChatGPT, llama.cpp, and Ollama backends, their GitHub Very minimal, very fast. Latest release is v0.11.3 which was released on Sep 1, 2025. 
 
-- [oatmeal](https://github.com/dustinblackman/oatmeal) — Another Rust-based solution, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends, they have nice chat bubbles UI. Latest release is v0.13.0, which was on Mar 16, 2024, couple of years ago, so, also abandoned project.
+- [oatmeal](https://github.com/dustinblackman/oatmeal) — Another Rust-based solution, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends, they have nice chat bubbles UI. Latest release is v0.13.0, which was on Mar 16, 2024, couple of years ago, so, also abandoned project. Looks like author decided to use fantastic library in the Rust ecosystem [Ratatui](https://ratatui.rs/). 4 pending PRs from 2024 and 2025, so project got abandoned.
 
 And none of these found projects were using Markdown for storing ai chats.
 
