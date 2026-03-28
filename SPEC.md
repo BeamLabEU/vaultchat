@@ -32,6 +32,22 @@ We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is gr
 
 First AI's take is to use Go + Bubble Tea combination, which gives the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context. 
 
+The main tradeoff vs Go:
+
+Ink/TypeScript wins:
+- Richer component model (it’s literally React)
+- Better LLM SDK support out of the box
+- LLMs can help write more of the code
+- Huge ecosystem (markdown rendering, syntax highlighting, etc.)
+- Claude Code and Gemini CLI prove it works at scale
+
+Ink/TypeScript loses:
+- Needs Node.js runtime (though Bun is lighter)
+- Heavier than a single Go binary
+- The dependency tree can get messy
+
+AI said that for a tool that’s primarily about chat, markdown, and API calls — not sandboxing or filesystem security like Codex needed — **TypeScript + Ink** feels like the right call.​​​​​​​​​​​​​​​​
+
 ## Design Principles
 
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
