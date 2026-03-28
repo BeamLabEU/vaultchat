@@ -10,10 +10,11 @@ The most important for us was to able to run it in the terminal, so we started t
 
 - [Parllama](https://github.com/paulrobello/parllama) — It says that PAR LLAMA is a TUI (Text UI) application designed for easy management and use of Ollama based LLMs, very close to what we want. It says that it supports OpenAI, Groq, Anthropic, Gemini, xAI, OpenRouter, DeepSeek, LiteLLM, and Ollama. Has dark/light modes, custom themes, prompt library, chat history, chat tabs for multiple models, and you can discover and download Ollama models from within the TUI. The application is built with [Textual](https://textual.textualize.io/) and [Rich](https://github.com/Textualize/rich). Textual is a Rapid Application Development framework for Python, and Rich is a Python library for rich text and beautiful formatting in the terminal. 
 
-- [tenere](https://github.com/pythops/tenere) — Tenere is pretty cool, pretty lean and Rust-based, it also has Vim-style keybindings, supports ChatGPT, llama.cpp, and Ollama backends, their GitHub Very minimal, very fast.
+- [tenere](https://github.com/pythops/tenere) — Tenere is pretty cool, pretty lean and Rust-based, it also has Vim-style keybindings, supports ChatGPT, llama.cpp, and Ollama backends, their GitHub Very minimal, very fast. Latest release is v0.11.3 which was released on Sep 1, 2025. 
 
-- oatmeal — also Rust-based, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends. GitHub Nice chat bubbles UI.
+- [oatmeal](https://github.com/dustinblackman/oatmeal) — Another Rust-based solution, with direct Neovim integration and support for Ollama, OpenAI, Claude, and Gemini backends, they have nice chat bubbles UI. Latest release is v0.13.0, which was on Mar 16, 2024, couple of years ago, so, also abandoned project.
 
+And none of these found projects were using Markdown for storing ai chats.
 
 ## Design Principles
 
