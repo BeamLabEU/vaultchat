@@ -36,9 +36,9 @@ So the Obsidian plugin ecosystem actually actually covers this idea pretty well 
 
 Does any of these great plugins scratch the itch, or is there still a gap these plugins don't cover? The TUI angle specifically — running it headless from terminal without Obsidian open — **that's the piece none of them do**.
 
-## Techstack brainstorming
+## Techstack brainstorming and deciding what frameworks to use
 
-We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is great for servers and web apps, but for a CLI tool that people brew install or grab a binary — it’s friction. Ratatouille exists but the TUI ecosystem is thin, and Burrito for packaging binaries is still rough. Looks like realistic options for this kind of project:
+We are Elixir shop, so we try to do all our projects in Elixir, and it is great for servers and web apps, but for a CLI tool that people brew install or grab a binary — it’s friction. Ratatouille exists but the TUI ecosystem is thin, and Burrito for packaging binaries is still rough. Looks like realistic options for this kind of project:
 
 - [Go](https://go.dev) + [Bubble Tea](https://github.com/charmbracelet/bubbletea) — probably the sweet spot for our usecase. The Charm ecosystem is incredible for TUIs (bubbletea, glamour for markdown rendering, lipgloss for styling). Single static binary, cross-compile trivially, brew install ready. This is what most modern TUI tools are built with.
 
@@ -61,7 +61,7 @@ Since our VaultChat will be a tool that’s primarily about chat, markdown, and 
 
 ## Design Principles
 
-1. **Keep everything local** - 
+1. **Keep everything local** - We don't want to store anything in the cloud or with third parties
 1. **No external services except of LLM providers** - No external APIs, DBs, RAG providers etc. All our functionality should come from just.
 1. **All conversation should be stored as markdown files** - and of course within the users Obsidian vault
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
@@ -74,19 +74,7 @@ Since our VaultChat will be a tool that’s primarily about chat, markdown, and 
 
 ## File Location
 
-```
-my-vault/
-├── vaultchat/                    # default conversations directory
-│   ├── 2026-03-28-server-migration.md
-│   ├── 2026-03-27-elixir-genserver-question.md
-│   └── ...
-├── vaultchat.toml                # config file (vault-level)
-└── ... (rest of vault)
-```
-
-- Default directory: `vaultchat/` in vault root (configurable)
-- Filename: `{date}-{slug}.md` auto-generated from first user message
-- User can rename files freely — vaultchat uses frontmatter `id` for tracking
+Any Obsidian file should be able to be used for LLM conversations, no special file format, we can have extra info in the file when vaultchat creates/updates the conversation file, but any file should be fine. User should be able to rename and organize files freely.
 
 -----
 
