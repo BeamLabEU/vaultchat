@@ -8,12 +8,12 @@
 - [x] `bun run dev` works
 
 ## Phase 2: Core Types + Config + Markdown Parser
-- [ ] Define types: `Message`, `Conversation`, `Frontmatter` in `src/markdown/types.ts`
-- [ ] Define provider types: `LLMProvider`, `ModelInfo`, `StreamChunk` in `src/providers/types.ts`
-- [ ] Config management in `src/vault/config.ts` — read/write `~/.vaultchat/config.json`
-- [ ] Markdown parser in `src/markdown/parser.ts` — code-fence-aware `---` splitting
-- [ ] Markdown serializer in `src/markdown/serializer.ts`
-- [ ] Tests: round-trip parse/serialize the spec example
+- [x] Define types: `Message`, `Conversation`, `Frontmatter` in `src/markdown/types.ts`
+- [x] Define provider types: `LLMProvider`, `ModelInfo`, `StreamChunk` in `src/providers/types.ts`
+- [x] Config management in `src/vault/config.ts` — read/write `~/.vaultchat/config.json`
+- [x] Markdown parser in `src/markdown/parser.ts` — code-fence-aware `---` splitting
+- [x] Markdown serializer in `src/markdown/serializer.ts`
+- [x] Tests: round-trip parse/serialize the spec example (11 tests passing)
 
 ## Phase 3: OpenRouter Provider
 - [ ] Implement `LLMProvider` interface in `src/providers/openrouter.ts`
