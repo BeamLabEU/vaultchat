@@ -1,14 +1,5 @@
-import { render, Text, Box } from "ink";
+import { render } from "ink";
+import { App } from "./tui/App.tsx";
 
-function App() {
-  return (
-    <Box flexDirection="column" padding={1}>
-      <Text bold color="cyan">
-        VaultChat
-      </Text>
-      <Text dimColor>TUI AI chat client — conversations as markdown files</Text>
-    </Box>
-  );
-}
-
-render(<App />);
+const { waitUntilExit } = render(<App />);
+await waitUntilExit();

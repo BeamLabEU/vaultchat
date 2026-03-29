@@ -24,13 +24,13 @@
 - [x] Model caching to `~/.vaultchat/providers/<provider>/models.json`
 
 ## Phase 4: First-Run Wizard
-- [ ] `src/tui/screens/Wizard.tsx` — multi-step setup
-- [ ] Step: choose provider (Select)
-- [ ] Step: enter API key (PasswordInput)
-- [ ] Step: validate key (Spinner + test request)
-- [ ] Step: choose model (searchable/filterable list)
-- [ ] Step: save config
-- [ ] Routing in `App.tsx`: no config → wizard, config found → main app
+- [x] `src/tui/screens/Wizard.tsx` — multi-step setup
+- [x] Step: choose provider (Select)
+- [x] Step: enter API key (TextInput with placeholder)
+- [x] Step: validate key (Spinner + /auth/key request)
+- [x] Step: choose model (searchable/filterable list, ★ recommended models first)
+- [x] Step: save config
+- [x] Routing in `src/tui/App.tsx`: no config → wizard, config found → main app
 
 ## Phase 5: File Tree (Left Panel)
 - [ ] `src/vault/files.ts` — list `.md` files, watch for changes
