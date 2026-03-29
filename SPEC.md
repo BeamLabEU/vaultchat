@@ -24,29 +24,22 @@ We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is gr
 
 - [Go](https://go.dev) + [Bubble Tea](https://github.com/charmbracelet/bubbletea) — probably the sweet spot for our usecase. The Charm ecosystem is incredible for TUIs (bubbletea, glamour for markdown rendering, lipgloss for styling). Single static binary, cross-compile trivially, brew install ready. This is what most modern TUI tools are built with.
 
-- [Rust](https://rust-lang.org/) + [ratatui](https://ratatui.rs/) — same single-binary advantage, slightly steeper curve, but tenere proves it works well for LLM TUIs.
+- [Rust](https://rust-lang.org/) + [Ratatui](https://ratatui.rs/) — same single-binary advantage, slightly steeper curve, but tenere proves it works well for LLM TUIs.
 
 - [Python](https://www.python.org/) + [Textual](https://textual.textualize.io/) — what parllama uses. Easiest to prototype, pip install works, but you know the Python dependency hell story.
 
 - [TypeScript](https://www.typescriptlang.org/) + [Ink](https://github.com/vadimdemedes/ink) - Ink’s ecosystem is impressive — it’s basically React for the terminal, so the mental model is familiar to a huge number of developers. And the fact that both Claude Code and Gemini CLI chose it independently is a strong signal. It also has a practical advantage for vaultchat specifically: since OpenRouter and all the LLM APIs have first-class TypeScript/JS SDKs, you’d have zero friction on the provider integration side. Markdown rendering in the terminal is also well-solved in the JS ecosystem (marked, marked-terminal, etc.).
 
-First AI's take is to use Go + Bubble Tea combination, which gives the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context. 
-
-The main tradeoff vs Go:
-
-Ink/TypeScript wins:
+First AI's take is to use **Go + Bubble Tea** combination, which gives the best balance of developer experience, distribution simplicity, and a rich TUI ecosystem. The Charm libs even have built-in markdown rendering which is perfect for displaying LLM responses inside the vault context. But after futher research it was decided to use **TypeScript + Ink**, and this combination won because:
 - Richer component model (it’s literally React)
 - Better LLM SDK support out of the box
 - LLMs can help write more of the code
 - Huge ecosystem (markdown rendering, syntax highlighting, etc.)
 - Claude Code and Gemini CLI prove it works at scale
 
-Ink/TypeScript loses:
-- Needs Node.js runtime (though Bun is lighter)
-- Heavier than a single Go binary
-- The dependency tree can get messy
+There are some downsides of course for Ink/TypeScript - like it needs Node.js runtime (though Bun is lighter), heavier than a single Go binary, and of course the dependency tree can get messy, this is common node.js problem. 
 
-AI said that for a tool that’s primarily about chat, markdown, and API calls — not sandboxing or filesystem security like Codex needed — **TypeScript + Ink** feels like the right call.​​​​​​​​​​​​​​​​
+Since our VaultChat will be a tool that’s primarily about chat, markdown, and API calls — not sandboxing or filesystem security like Codex needed — **TypeScript + Ink** feels like the right call.​​​​​​​​​​​​​​​​
 
 ## Design Principles
 
