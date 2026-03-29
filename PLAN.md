@@ -85,7 +85,6 @@
 | `gray-matter` | YAML frontmatter parsing/serialization |
 | `marked` + `marked-terminal` | Markdown-to-terminal rendering |
 | `cli-highlight` | Syntax highlighting in code blocks |
-| `chokidar` | File system watcher |
 | `@openrouter/sdk` | OpenRouter API client |
 | `zustand` | State management (add later if needed) |
 
