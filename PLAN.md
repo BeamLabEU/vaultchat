@@ -61,11 +61,12 @@
 - [x] Wikilink tests (8 tests)
 
 ## Phase 8: Provider/Model Switcher
-- [ ] `src/tui/components/ModelSwitcher.tsx` — modal overlay
-- [ ] `Ctrl+M` to open
-- [ ] Searchable/filterable model list
-- [ ] Favorite models shown first
-- [ ] Updates config + current conversation frontmatter
+- [x] `src/tui/components/ModelSwitcher.tsx` — modal overlay with double border
+- [x] `Ctrl+M` to open, `Esc` to close
+- [x] Searchable/filterable model list (top 20 shown)
+- [x] Favorite models (★) shown first
+- [x] Updates config, saves to disk, updates current conversation frontmatter
+- [x] Provider selection step (shown when multiple providers configured)
 
 ## Phase 9: Settings Panel
 - [ ] `src/tui/screens/Settings.tsx`
