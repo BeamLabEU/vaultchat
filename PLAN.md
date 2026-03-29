@@ -47,13 +47,15 @@
 - [ ] Tab to switch focus between panels
 - [ ] Status bar at bottom
 
-## Phase 7: Send Messages + Stream Responses
+## Phase 7: Send Messages + Stream Responses + Wikilink Context
 - [ ] Text input at bottom of ChatView
 - [ ] `useChat.sendMessage()` — append user msg, stream assistant response
 - [ ] `src/tui/components/StreamingText.tsx` — real-time chunk rendering
 - [ ] Save conversation to disk after each message
 - [ ] Auto-rename file after first exchange (ask LLM for filename)
 - [ ] `src/vault/files.ts` — `createNewChat()` with default filename
+- [ ] `src/vault/wikilinks.ts` — resolve `[[wikilinks]]` to file contents at send-time
+- [ ] Inject resolved context into API call (frontmatter `context` field + inline wikilinks)
 
 ## Phase 8: Provider/Model Switcher
 - [ ] `src/tui/components/ModelSwitcher.tsx` — modal overlay
@@ -72,7 +74,6 @@
 - [ ] Error handling: network errors, invalid API key, file write failures
 - [ ] Graceful shutdown: abort streaming on Ctrl+C, save partial response
 - [ ] Non-VaultChat `.md` files: display read-only or offer to convert
-- [ ] Basic wikilink context injection (`src/vault/wikilinks.ts`)
 - [ ] Keyboard shortcuts reference in status bar
 
 ## Key Packages
