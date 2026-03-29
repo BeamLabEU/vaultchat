@@ -76,10 +76,11 @@
 - [x] Changes saved to config immediately
 
 ## Phase 10: Polish & Edge Cases
-- [ ] Error handling: network errors, invalid API key, file write failures
-- [ ] Graceful shutdown: abort streaming on Ctrl+C, save partial response
-- [ ] Non-VaultChat `.md` files: display read-only or offer to convert
-- [ ] Keyboard shortcuts reference in status bar
+- [x] Error handling: file load errors, save failures (keeps messages in memory), network errors shown in chat
+- [x] Graceful shutdown: Ctrl+C cancels streaming first, second Ctrl+C exits. Partial responses saved.
+- [x] Non-VaultChat `.md` files: auto-adds default frontmatter (model, provider, date, vaultchat tag) so user can start chatting
+- [x] Keyboard shortcuts: Ctrl+N new chat, Ctrl+M model switcher, Ctrl+S settings, Ctrl+C quit/cancel
+- [x] Status bar shows streaming state
 
 ## Key Packages
 

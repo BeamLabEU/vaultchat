@@ -20,20 +20,48 @@ export function useChat(config: Config) {
   const messageCountRef = useRef(0);
 
   const loadConversation = useCallback(async (filePath: string) => {
-    const file = Bun.file(filePath);
-    if (!(await file.exists())) return;
-    const content = await file.text();
-    const conv = parseConversation(content, filePath);
-    setConversation(conv);
-    setError(null);
-    messageCountRef.current = conv.messages.filter(
-      (m) => m.role === "user"
-    ).length;
-  }, []);
+    try {
+      const file = Bun.file(filePath);
+      if (!(await file.exists())) {
+        setError(`File not found: ${filePath}`);
+        return;
+      }
+      const content = await file.text();
+      const conv = parseConversation(content, filePath);
+
+      // If file has no model/provider in frontmatter, it's not a VaultChat file.
+      // Add defaults so user can start chatting in it.
+      if (!conv.frontmatter.model || !conv.frontmatter.provider) {
+        conv.frontmatter.model = conv.frontmatter.model || config.activeModel;
+        conv.frontmatter.provider = conv.frontmatter.provider || config.activeProvider;
+        conv.frontmatter.date = conv.frontmatter.date || new Date().toISOString();
+        conv.frontmatter.title = conv.frontmatter.title || filePath.split("/").pop()?.replace(/\.md$/, "") || "Untitled";
+        if (!conv.frontmatter.tags) {
+          conv.frontmatter.tags = ["vaultchat"];
+        } else if (!conv.frontmatter.tags.includes("vaultchat")) {
+          conv.frontmatter.tags.push("vaultchat");
+        }
+      }
+
+      setConversation(conv);
+      setError(null);
+      messageCountRef.current = conv.messages.filter(
+        (m) => m.role === "user"
+      ).length;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load file";
+      setError(msg);
+    }
+  }, [config.activeModel, config.activeProvider]);
 
   const saveConversation = useCallback(async (conv: Conversation) => {
-    const content = serializeConversation(conv);
-    await Bun.write(conv.filePath, content);
+    try {
+      const content = serializeConversation(conv);
+      await Bun.write(conv.filePath, content);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save file";
+      setError(`Save failed: ${msg}. Messages kept in memory.`);
+    }
   }, []);
 
   const sendMessage = useCallback(

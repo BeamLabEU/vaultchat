@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Box, Text, useInput, useStdout } from "ink";
+import { Box, Text, useInput, useStdout, useApp } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
 import { ModelSwitcher } from "../components/ModelSwitcher.tsx";
@@ -24,6 +24,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const { stdout } = useStdout();
   const termHeight = stdout?.rows ?? 24;
 
+  const { exit } = useApp();
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
   const chat = useChat(config);
@@ -46,7 +47,29 @@ export function Main({ config: initialConfig }: MainProps) {
     if (key.ctrl && input === "s") {
       setShowSettings(true);
     }
+    if (key.ctrl && input === "n") {
+      handleNewChat();
+    }
+    // Graceful quit: cancel streaming first, then exit
+    if (key.ctrl && input === "c") {
+      if (chat.isStreaming) {
+        chat.cancelStreaming();
+      } else {
+        exit();
+      }
+    }
   });
+
+  const handleNewChat = useCallback(async () => {
+    const newPath = await createNewChat(
+      cwd,
+      config.activeModel,
+      config.activeProvider
+    );
+    await fileTree.refresh();
+    setCurrentFile(newPath);
+    setActivePanel("chat");
+  }, [cwd, config, fileTree]);
 
   const handleFileSelect = useCallback(async () => {
     if (fileTree.isNewChatSelected) {
@@ -103,7 +126,7 @@ export function Main({ config: initialConfig }: MainProps) {
           VaultChat
         </Text>
         <Text dimColor>
-          {config.activeModel} | Ctrl+M: model | Ctrl+S: settings
+          {config.activeModel}{chat.isStreaming ? " (streaming...)" : ""}
         </Text>
       </Box>
 
@@ -162,7 +185,7 @@ export function Main({ config: initialConfig }: MainProps) {
             ? "Tab: switch tabs | ↑↓: navigate | Enter: select | Esc: close"
             : showModelSwitcher
               ? "↑↓: navigate | Enter: select | Esc: close"
-              : "↑↓: scroll | Enter: send/open | Tab: panels | Ctrl+M: model | Ctrl+S: settings"}
+              : "Tab: panels | Ctrl+N: new chat | Ctrl+M: model | Ctrl+S: settings | Ctrl+C: quit"}
         </Text>
       </Box>
     </Box>
