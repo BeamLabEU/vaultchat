@@ -49,14 +49,16 @@
 - [x] Status bar at bottom
 
 ## Phase 7: Send Messages + Stream Responses + Wikilink Context
-- [ ] Text input at bottom of ChatView
-- [ ] `useChat.sendMessage()` — append user msg, stream assistant response
-- [ ] `src/tui/components/StreamingText.tsx` — real-time chunk rendering
-- [ ] Save conversation to disk after each message
-- [ ] Auto-rename file after first exchange (ask LLM for filename)
-- [ ] `src/vault/files.ts` — `createNewChat()` with default filename
-- [ ] `src/vault/wikilinks.ts` — resolve `[[wikilinks]]` to file contents at send-time
-- [ ] Inject resolved context into API call (frontmatter `context` field + inline wikilinks)
+- [x] Text input at bottom of ChatView (with focus state)
+- [x] `useChat.sendMessage()` — append user msg, stream assistant response
+- [x] `src/tui/components/StreamingText.tsx` — real-time chunk rendering with spinner
+- [x] Save conversation to disk after each user message and after stream completes
+- [x] Auto-rename file after first exchange (asks LLM for kebab-case filename)
+- [x] `src/vault/files.ts` — `createNewChat()` with default filename
+- [x] `src/vault/wikilinks.ts` — resolve `[[wikilinks]]` to file contents at send-time
+- [x] Inject resolved context into API call (frontmatter `context` field + inline wikilinks)
+- [x] Escape to cancel streaming, partial response saved
+- [x] Wikilink tests (8 tests)
 
 ## Phase 8: Provider/Model Switcher
 - [ ] `src/tui/components/ModelSwitcher.tsx` — modal overlay

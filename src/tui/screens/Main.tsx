@@ -21,7 +21,7 @@ export function Main({ config }: MainProps) {
 
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
-  const chat = useChat();
+  const chat = useChat(config);
 
   // Load conversation when file changes
   useEffect(() => {
@@ -52,6 +52,13 @@ export function Main({ config }: MainProps) {
     }
   }, [fileTree, cwd, config]);
 
+  const handleSendMessage = useCallback(
+    (text: string) => {
+      chat.sendMessage(text);
+    },
+    [chat.sendMessage]
+  );
+
   return (
     <Box flexDirection="column" height={termHeight}>
       {/* Status bar */}
@@ -60,7 +67,7 @@ export function Main({ config }: MainProps) {
           VaultChat
         </Text>
         <Text dimColor>
-          {config.activeProvider}/{config.activeModel} | Tab: switch panels
+          {config.activeModel} | Tab: switch panels
         </Text>
       </Box>
 
@@ -81,13 +88,19 @@ export function Main({ config }: MainProps) {
           messages={chat.messages}
           focused={activePanel === "chat"}
           viewportHeight={termHeight - 3}
+          isStreaming={chat.isStreaming}
+          streamingContent={chat.streamingContent}
+          error={chat.error}
+          hasConversation={!!chat.conversation}
+          onSendMessage={handleSendMessage}
+          onCancelStreaming={chat.cancelStreaming}
         />
       </Box>
 
       {/* Bottom bar */}
       <Box paddingX={1}>
         <Text dimColor>
-          ↑↓/jk: navigate | Enter: open | Tab: switch panel | Ctrl+C: quit
+          ↑↓: scroll | Enter: send/open | Tab: switch panel | Esc: cancel stream | Ctrl+C: quit
         </Text>
       </Box>
     </Box>
