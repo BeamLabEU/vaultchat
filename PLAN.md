@@ -33,10 +33,11 @@
 - [x] Routing in `src/tui/App.tsx`: no config → wizard, config found → main app
 
 ## Phase 5: File Tree (Left Panel)
-- [ ] `src/vault/files.ts` — list `.md` files, watch for changes
-- [ ] `src/hooks/useFileTree.ts` — file listing + watcher state
-- [ ] `src/tui/components/FileTree.tsx` — bordered list, keyboard nav, `[New Chat]` at top
-- [ ] Scrollable when files exceed viewport
+- [x] `src/vault/files.ts` — list `.md` files, watch for changes (Bun native fs.watch), create new chat files
+- [x] `src/hooks/useFileTree.ts` — file listing + watcher state, j/k and arrow nav
+- [x] `src/tui/components/FileTree.tsx` — bordered list, keyboard nav, `+ New Chat` at top, scroll indicators
+- [x] `src/tui/screens/Main.tsx` — horizontal layout with FileTree + chat placeholder, Tab to switch panels
+- [x] Scrollable when files exceed viewport
 
 ## Phase 6: Chat View (Right Panel)
 - [ ] `src/tui/components/MessageBubble.tsx` — rendered markdown per message
