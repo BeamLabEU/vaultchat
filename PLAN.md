@@ -69,10 +69,11 @@
 - [x] Provider selection step (shown when multiple providers configured)
 
 ## Phase 9: Settings Panel
-- [ ] `src/tui/screens/Settings.tsx`
-- [ ] Providers tab: add/remove/edit providers + API keys + test connection
-- [ ] Favorites tab: toggle favorite models
-- [ ] `Ctrl+S` to open, `Escape` to close
+- [x] `src/tui/screens/Settings.tsx` — tabbed interface
+- [x] Providers tab: list configured providers, edit API keys, add new providers, test connection
+- [x] Favorites tab: searchable model list, toggle ★ favorite status, favorites shown first
+- [x] `Ctrl+S` to open, `Escape` to close, `Tab` to switch tabs
+- [x] Changes saved to config immediately
 
 ## Phase 10: Polish & Edge Cases
 - [ ] Error handling: network errors, invalid API key, file write failures

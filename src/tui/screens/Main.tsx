@@ -3,6 +3,7 @@ import { Box, Text, useInput, useStdout } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
 import { ModelSwitcher } from "../components/ModelSwitcher.tsx";
+import { Settings } from "./Settings.tsx";
 import { useFileTree } from "../../hooks/useFileTree.ts";
 import { useChat } from "../../hooks/useChat.ts";
 import { createNewChat } from "../../vault/files.ts";
@@ -19,6 +20,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const [activePanel, setActivePanel] = useState<Panel>("files");
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [showModelSwitcher, setShowModelSwitcher] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { stdout } = useStdout();
   const termHeight = stdout?.rows ?? 24;
 
@@ -34,12 +36,15 @@ export function Main({ config: initialConfig }: MainProps) {
   }, [currentFile]);
 
   useInput((input, key) => {
-    if (showModelSwitcher) return; // ModelSwitcher handles its own input
+    if (showModelSwitcher || showSettings) return; // Modals handle own input
     if (key.tab) {
       setActivePanel((p) => (p === "files" ? "chat" : "files"));
     }
     if (key.ctrl && input === "m") {
       setShowModelSwitcher(true);
+    }
+    if (key.ctrl && input === "s") {
+      setShowSettings(true);
     }
   });
 
@@ -98,12 +103,23 @@ export function Main({ config: initialConfig }: MainProps) {
           VaultChat
         </Text>
         <Text dimColor>
-          {config.activeModel} | Tab: panels | Ctrl+M: model
+          {config.activeModel} | Ctrl+M: model | Ctrl+S: settings
         </Text>
       </Box>
 
-      {/* Modal overlay */}
-      {showModelSwitcher ? (
+      {/* Modal overlays */}
+      {showSettings ? (
+        <Box flexGrow={1}>
+          <Settings
+            config={config}
+            onSave={async (newConfig) => {
+              setConfig(newConfig);
+              await saveConfig(newConfig);
+            }}
+            onClose={() => setShowSettings(false)}
+          />
+        </Box>
+      ) : showModelSwitcher ? (
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <ModelSwitcher
             config={config}
@@ -142,9 +158,11 @@ export function Main({ config: initialConfig }: MainProps) {
       {/* Bottom bar */}
       <Box paddingX={1}>
         <Text dimColor>
-          {showModelSwitcher
-            ? "↑↓: navigate | Enter: select | Esc: close"
-            : "↑↓: scroll | Enter: send/open | Tab: panels | Ctrl+M: model | Ctrl+C: quit"}
+          {showSettings
+            ? "Tab: switch tabs | ↑↓: navigate | Enter: select | Esc: close"
+            : showModelSwitcher
+              ? "↑↓: navigate | Enter: select | Esc: close"
+              : "↑↓: scroll | Enter: send/open | Tab: panels | Ctrl+M: model | Ctrl+S: settings"}
         </Text>
       </Box>
     </Box>
