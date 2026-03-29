@@ -18,6 +18,24 @@ Unfortunatelly none of these projects we found were using Markdown for storing a
 
 Essentially we want an LLM TUI that’s vault-native — you run it from within your Obsidian vault, conversations get saved as .md files with proper frontmatter, and they instantly become part of our knowledge graph. Searchable, linkable, taggable. This should open up some powerful possibilities: we could [[link]] to other notes as context, the AI responses become permanent knowledge artifacts, and we could even use Obsidian’s dataview or search to query across all your past conversations. 
 
+## Obsidian plugins
+
+Did some research about existing Obsidian plugins, which store conversations in md files, and turns out there's a lot happening here, and the closest matches to our idea were:
+
+**[ChatGPT MD](https://github.com/bramses/chatgpt-md)** - It says that it is "a (nearly) seamless integration of ChatGPT into Obsidian". 1.4k stars on github, and with very recent commits, so looks like it is active and not abandoned. 
+
+**[LLM docs](https://github.com/shane-lamb/obsidian-llm-docs)** — conversations happen directly in plain markdown files that you can freely edit. It can follow links to other Obsidian documents included in the prompt for additional context. Works with OpenAI-compatible APIs (so OpenRouter works). This is probably the purest version of what we were thinking about.
+
+**[Caret](https://github.com/jcollingj/caret)** — stores chat logs as markdown files and integrates with Obsidian Canvas for non-linear visual workflows. Compatible with OpenAI, Anthropic, and custom models, with all data staying in the vault. Last release 0.2.80 was on Oct 23, 2025. 199 stars on github, and last commit 5 months ago. 
+
+**[Obsidian Copilot](https://github.com/logancyang/obsidian-copilot)** — the most feature-rich option. Supports OpenRouter, Gemini, OpenAI, Anthropic, Cohere as providers. Has vault-wide RAG search, long-term memory, and their philosophy is explicitly anti-lock-in: data is always yours, use whatever LLM you like. Though it has a paid "Plus" tier for some features.
+
+**[BMO Chatbot](https://www.obsidianstats.com/tags/llm)** — supports multiple LLMs from OpenAI, Anthropic, and self-hosted APIs like Ollama. Users can save conversations in markdown format.
+
+So the Obsidian plugin ecosystem actually covers this pretty well — especially **LLM docs** for the "conversations as plain markdown" philosophy, and **Copilot** for the full-featured vault-aware approach.
+
+Does this scratch the itch, or is there still a gap these plugins don't cover? The TUI angle specifically — running it headless from terminal without Obsidian open — that's the piece none of them do.
+
 ## Techstack brainstorming
 
 We are Elixir shop, so we try to do all our projects in Elixir, and Elixir is great for servers and web apps, but for a CLI tool that people brew install or grab a binary — it’s friction. Ratatouille exists but the TUI ecosystem is thin, and Burrito for packaging binaries is still rough. Looks like realistic options for this kind of project:
@@ -43,6 +61,9 @@ Since our VaultChat will be a tool that’s primarily about chat, markdown, and 
 
 ## Design Principles
 
+1. **Keep everything local** - 
+1. **No external services except of LLM providers** - No external APIs, DBs, RAG providers etc. All our functionality should come from just.
+1. **All conversation should be stored as markdown files** - and of course within the users Obsidian vault
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
 1. **Obsidian-native** — frontmatter, tags, `[[wikilinks]]` work as expected
 1. **Parseable** — vaultchat can reliably round-trip (read/write) without losing data
