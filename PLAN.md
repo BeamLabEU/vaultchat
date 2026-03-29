@@ -1,11 +1,11 @@
 # VaultChat MVP — Implementation Plan
 
 ## Phase 1: Project Scaffolding
-- [ ] `bun init`, `tsconfig.json`, `bunfig.toml`
-- [ ] Install core deps: `ink`, `react`, `@inkjs/ui`, `typescript`, `@types/react`, `bun-types`
-- [ ] Create directory structure: `src/providers/`, `src/tui/screens/`, `src/tui/components/`, `src/vault/`, `src/markdown/`, `src/hooks/`
-- [ ] Minimal `src/index.tsx` — renders "VaultChat" to terminal
-- [ ] `bun run dev` works
+- [x] `bun init`, `tsconfig.json`
+- [x] Install core deps: `ink`, `react`, `@inkjs/ui`, `@types/react`, `bun-types`
+- [x] Create directory structure: `src/providers/`, `src/tui/screens/`, `src/tui/components/`, `src/vault/`, `src/markdown/`, `src/hooks/`
+- [x] Minimal `src/index.tsx` — renders "VaultChat" to terminal
+- [x] `bun run dev` works
 
 ## Phase 2: Core Types + Config + Markdown Parser
 - [ ] Define types: `Message`, `Conversation`, `Frontmatter` in `src/markdown/types.ts`
