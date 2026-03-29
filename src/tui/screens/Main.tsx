@@ -1,7 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Box, Text, useInput, useStdout } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
+import { ChatView } from "../components/ChatView.tsx";
 import { useFileTree } from "../../hooks/useFileTree.ts";
+import { useChat } from "../../hooks/useChat.ts";
 import { createNewChat } from "../../vault/files.ts";
 import type { Config } from "../../vault/config.ts";
 
@@ -19,6 +21,14 @@ export function Main({ config }: MainProps) {
 
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
+  const chat = useChat();
+
+  // Load conversation when file changes
+  useEffect(() => {
+    if (currentFile) {
+      chat.loadConversation(currentFile);
+    }
+  }, [currentFile]);
 
   useInput((input, key) => {
     if (key.tab) {
@@ -66,33 +76,12 @@ export function Main({ config }: MainProps) {
           onSelect={handleFileSelect}
         />
 
-        {/* Chat panel placeholder — Phase 6 */}
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          borderStyle={activePanel === "chat" ? "bold" : "single"}
-          borderColor={activePanel === "chat" ? "cyan" : "gray"}
-          paddingX={1}
-        >
-          {currentFile ? (
-            <Box flexDirection="column">
-              <Text bold>
-                {currentFile.split("/").pop()?.replace(/\.md$/, "")}
-              </Text>
-              <Text dimColor>Chat view coming in Phase 6...</Text>
-            </Box>
-          ) : (
-            <Box
-              flexGrow={1}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Text dimColor>
-                Select a file or create a new chat to get started
-              </Text>
-            </Box>
-          )}
-        </Box>
+        <ChatView
+          title={chat.title}
+          messages={chat.messages}
+          focused={activePanel === "chat"}
+          viewportHeight={termHeight - 3}
+        />
       </Box>
 
       {/* Bottom bar */}

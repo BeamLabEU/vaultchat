@@ -40,13 +40,13 @@
 - [x] Scrollable when files exceed viewport
 
 ## Phase 6: Chat View (Right Panel)
-- [ ] `src/tui/components/MessageBubble.tsx` — rendered markdown per message
-- [ ] `src/tui/components/ChatView.tsx` — scrollable message list
-- [ ] `src/tui/screens/Main.tsx` — horizontal layout: FileTree | ChatView
-- [ ] `src/hooks/useChat.ts` — load conversation from file
-- [ ] Markdown rendering with `marked` + `marked-terminal` + `cli-highlight`
-- [ ] Tab to switch focus between panels
-- [ ] Status bar at bottom
+- [x] `src/tui/components/MessageBubble.tsx` — rendered markdown per message, color-coded roles
+- [x] `src/tui/components/ChatView.tsx` — scrollable message list, auto-scroll to bottom
+- [x] `src/tui/screens/Main.tsx` — wired up FileTree + ChatView, loads conversation on file select
+- [x] `src/hooks/useChat.ts` — load conversation from file via parser
+- [x] `src/markdown/render.ts` — markdown rendering with `marked@9` + `marked-terminal@6`
+- [x] Tab to switch focus between panels
+- [x] Status bar at bottom
 
 ## Phase 7: Send Messages + Stream Responses + Wikilink Context
 - [ ] Text input at bottom of ChatView
