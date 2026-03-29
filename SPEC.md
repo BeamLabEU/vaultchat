@@ -59,16 +59,99 @@ There are some downsides of course for Ink/TypeScript - like it needs Node.js ru
 
 Since our VaultChat will be a tool that’s primarily about chat, markdown, and API calls — not sandboxing or filesystem security like Codex needed — **TypeScript + Ink** feels like the right call.​​​​​​​​​​​​​​​​
 
+## Tech Stack (Decided)
+
+| Choice | Decision | Rationale |
+|--------|----------|-----------|
+| **Runtime** | [Bun](https://bun.sh/) | 3-5x faster cold start than Node, native TS execution, built-in bundler, faster file I/O (`Bun.file()`, `Bun.write()`) for heavy .md read/write, built-in SQLite for future metadata indexing |
+| **Language** | TypeScript | First-class LLM SDK support, LLMs can help write more code, huge ecosystem |
+| **TUI framework** | [Ink](https://github.com/vadimdemedes/ink) | React for the terminal — rich component model, proven at scale by Claude Code and Gemini CLI |
+| **Package manager** | bun | Native to the runtime |
+| **Testing** | `bun test` | Built-in, fast, Jest-compatible API — no extra dependencies |
+| **Distribution** | Compiled binary + `bun install -g` | Bun's compile-to-binary produces ~60MB self-contained binaries for macOS/Linux/Windows, no Node.js required (inspired by Tigris CLI's successful migration) |
+
+### Project Structure
+
+Monorepo with clear module boundaries inside `src/`:
+
+```
+src/
+  providers/    # LLM provider integrations (OpenRouter, Ollama, OpenAI-compatible)
+  tui/          # Ink components and screens
+  vault/        # File system operations, vault discovery, .md file management
+  markdown/     # Parser/serializer for the conversation file format
+```
+
+-----
+
 ## Design Principles
 
-1. **Keep everything local** - We don't want to store anything in the cloud or with third parties
-1. **No external services except of LLM providers** - No external APIs, DBs, RAG providers etc. All our functionality should come from just.
-1. **All conversation should be stored as markdown files** - and of course within the users Obsidian vault
+1. **Keep everything local** — no cloud storage or third-party services beyond LLM providers
+1. **No external services except LLM providers** — no external APIs, DBs, RAG providers etc.
+1. **All conversations stored as markdown files** — works in Obsidian vaults but also any directory
 1. **Plain markdown first** — must look good in any markdown viewer, not just Obsidian
 1. **Obsidian-native** — frontmatter, tags, `[[wikilinks]]` work as expected
 1. **Parseable** — vaultchat can reliably round-trip (read/write) without losing data
 1. **Editable** — user can freely edit any part of the conversation and re-submit
 1. **Diffable** — git-friendly, no binary blobs
+1. **Directory-agnostic** — works in any directory, not just Obsidian vaults
+1. **The filesystem is the database** — file paths are identity, no synthetic IDs needed
+
+-----
+
+## Configuration & Settings
+
+All configuration lives in `~/.vaultchat/`:
+
+```
+~/.vaultchat/
+  config.json                    # Main config (active provider, active model, favorites, etc.)
+  providers/
+    openrouter/
+      models.json                # Cached model list (refreshed when stale)
+    ollama/
+      models.json
+```
+
+### First-Run Wizard (TUI)
+
+If no config exists at `~/.vaultchat/config.json`, vaultchat launches an interactive setup wizard:
+
+1. **Choose provider** — show list of supported providers (start with OpenRouter)
+2. **Enter API key** — prompt for the key
+3. **Validate key** — make a test API request; show error if invalid, continue if valid
+4. **Choose model** — fetch model list from provider, show searchable/filterable list with recommended models highlighted at the top
+5. **Save config** — write to `~/.vaultchat/config.json`
+
+### Model List Caching
+
+- On first use (or when cache is stale), fetch full model list from provider API
+- Cache per provider: `~/.vaultchat/providers/<provider>/models.json`
+- Provide a way to refresh (e.g., in settings panel, or automatically after N days)
+- Models are many — the list needs filter/search functionality
+
+### Settings Panel (TUI)
+
+Accessible from the main TUI via a settings button/shortcut:
+
+- **Providers** — add/remove/edit providers and API keys
+- **Favorite models** — mark models as favorites, shown first in the model dropdown
+- Provider/model switching available from the main chat view via a dropdown
+
+-----
+
+## MVP — What We're Building First
+
+1. **First-run wizard** — provider setup, API key validation, model selection (see Configuration section)
+2. **Main TUI layout** — file/directory tree on the left showing current directory's `.md` files, chat view on the right
+3. **New chat** — `[New Chat]` button creates a new conversation file; default filename initially, renamed after first message by asking the LLM for a good name
+4. **Open existing chat** — click/select any `.md` file in the tree to open it
+5. **Send & stream** — type a message, send it, stream the LLM response back with markdown rendering
+6. **Provider/model switcher** — dropdown to change provider and model mid-session
+7. **Settings panel** — configure providers, manage favorites
+8. **Save to disk** — all conversations persisted as `.md` files in the spec'd format
+
+Start with OpenRouter as the first provider, but architect the provider layer so adding Ollama and OpenAI-compatible providers is straightforward.
 
 -----
 
@@ -82,7 +165,6 @@ Any Obsidian file should be able to be used for LLM conversations, no special fi
 
 ```yaml
 ---
-id: 01JQXK5V7G3M8N2P4R6T9W1Y
 title: Server migration to ARM64
 date: 2026-03-28T14:32:00+02:00
 model: anthropic/claude-sonnet-4
@@ -100,9 +182,10 @@ params:
 ---
 ```
 
+> **Note:** No synthetic IDs. The filesystem is the database — the file path is the identity. If branching ever needs a parent reference, a `[[wikilink]]` to the parent file is more Obsidian-native than a synthetic ID.
+
 |Field     |Required|Description                                         |
 |----------|--------|----------------------------------------------------|
-|`id`      |yes     |ULIDv7 or UUIDv7 — unique conversation identifier   |
 |`title`   |yes     |Auto-generated from first message, user can edit    |
 |`date`    |yes     |ISO 8601 creation timestamp                         |
 |`model`   |yes     |Model identifier (OpenRouter-style `provider/model`)|
@@ -168,8 +251,8 @@ If present, appears as the first message before any user/assistant exchange:
 
 ```markdown
 ---
-id: ...
 title: ...
+date: ...
 ---
 
 ###### system
@@ -239,13 +322,12 @@ New messages are appended.
 ### Branching (future)
 
 For conversation branching, a new file is created with a `parent` field
-in frontmatter pointing to the original:
+in frontmatter pointing to the original via wikilink:
 
 ```yaml
 ---
-id: 01JQXM8...
 title: Server migration (alt approach)
-parent: 01JQXK5V7G3M8N2P4R6T9W1Y
+parent: "[[Server migration to ARM64]]"
 branch_from: 3  # message index where branch started
 ---
 ```
@@ -256,7 +338,6 @@ branch_from: 3  # message index where branch started
 
 ```markdown
 ---
-id: 01JQXK5V7G3M8N2P4R6T9W1Y
 title: Caddy reverse proxy setup
 date: 2026-03-28T14:32:00+02:00
 model: anthropic/claude-sonnet-4
