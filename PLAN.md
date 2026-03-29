@@ -16,12 +16,12 @@
 - [x] Tests: round-trip parse/serialize the spec example (11 tests passing)
 
 ## Phase 3: OpenRouter Provider
-- [ ] Implement `LLMProvider` interface in `src/providers/openrouter.ts`
-- [ ] `validateKey()` — test API request
-- [ ] `listModels()` — fetch and map to `ModelInfo[]`
-- [ ] `chat()` — streaming completions via SSE
-- [ ] Provider registry in `src/providers/registry.ts`
-- [ ] Model caching to `~/.vaultchat/providers/openrouter/models.json`
+- [x] Implement `LLMProvider` interface in `src/providers/openrouter.ts`
+- [x] `validateKey()` — via `/api/v1/auth/key` endpoint
+- [x] `listModels()` — fetch and map to `ModelInfo[]`
+- [x] `chat()` — streaming completions via SSE with raw fetch
+- [x] Provider registry in `src/providers/registry.ts`
+- [x] Model caching to `~/.vaultchat/providers/<provider>/models.json`
 
 ## Phase 4: First-Run Wizard
 - [ ] `src/tui/screens/Wizard.tsx` — multi-step setup
