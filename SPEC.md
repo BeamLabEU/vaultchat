@@ -22,19 +22,19 @@ Essentially we want an LLM TUI that’s vault-native — you run it from within 
 
 Did some research about existing Obsidian plugins, which store conversations in md files, and turns out there's a lot happening here, and the closest matches to our idea were:
 
-**[ChatGPT MD](https://github.com/bramses/chatgpt-md)** - It says that it is "a (nearly) seamless integration of ChatGPT into Obsidian". 1.4k stars on github, and with very recent commits, so looks like it is active and not abandoned. 
+- **[ChatGPT MD](https://github.com/bramses/chatgpt-md)** - It says that it is "a (nearly) seamless integration of ChatGPT into Obsidian". 1.4k stars on github, and with very recent commits, so looks like it is active and not abandoned. 
 
-**[LLM docs](https://github.com/shane-lamb/obsidian-llm-docs)** — conversations happen directly in plain markdown files that you can freely edit. It can follow links to other Obsidian documents included in the prompt for additional context. Works with OpenAI-compatible APIs (so OpenRouter works). This is probably the purest version of what we were thinking about.
+- **[LLM docs](https://github.com/shane-lamb/obsidian-llm-docs)** — conversations happen directly in plain markdown files that you can freely edit. It can follow links to other Obsidian documents included in the prompt for additional context. Works with OpenAI-compatible APIs (so OpenRouter works). This is probably the purest version of what we were thinking about.
 
-**[Caret](https://github.com/jcollingj/caret)** — stores chat logs as markdown files and integrates with Obsidian Canvas for non-linear visual workflows. Compatible with OpenAI, Anthropic, and custom models, with all data staying in the vault. Last release 0.2.80 was on Oct 23, 2025. 199 stars on github, and last commit 5 months ago. 
+- **[Caret](https://github.com/jcollingj/caret)** — stores chat logs as markdown files and integrates with Obsidian Canvas for non-linear visual workflows. Compatible with OpenAI, Anthropic, and custom models, with all data staying in the vault. Last release 0.2.80 was on Oct 23, 2025. 199 stars on github, and last commit 5 months ago. 
 
-**[Obsidian Copilot](https://github.com/logancyang/obsidian-copilot)** — the most feature-rich option. Supports OpenRouter, Gemini, OpenAI, Anthropic, Cohere as providers. Has vault-wide RAG search, long-term memory, and their philosophy is explicitly anti-lock-in: data is always yours, use whatever LLM you like. Though it has a paid "Plus" tier for some features.
+- **[Obsidian Copilot](https://github.com/logancyang/obsidian-copilot)** — the most feature-rich option. Supports OpenRouter, Gemini, OpenAI, Anthropic, Cohere as providers. Has vault-wide RAG search, long-term memory, and their philosophy is explicitly anti-lock-in: data is always yours, use whatever LLM you like. Though it has a paid "Plus" tier for some features.
 
-**[BMO Chatbot](https://www.obsidianstats.com/tags/llm)** — supports multiple LLMs from OpenAI, Anthropic, and self-hosted APIs like Ollama. Users can save conversations in markdown format.
+- **[BMO Chatbot](https://www.obsidianstats.com/tags/llm)** — supports multiple LLMs from OpenAI, Anthropic, and self-hosted APIs like Ollama. Users can save conversations in markdown format.
 
-So the Obsidian plugin ecosystem actually covers this pretty well — especially **LLM docs** for the "conversations as plain markdown" philosophy, and **Copilot** for the full-featured vault-aware approach.
+So the Obsidian plugin ecosystem actually actually covers this idea pretty well — especially **LLM docs** for the "conversations as plain markdown" philosophy, and **Copilot** for the full-featured vault-aware approach.
 
-Does this scratch the itch, or is there still a gap these plugins don't cover? The TUI angle specifically — running it headless from terminal without Obsidian open — that's the piece none of them do.
+Does any of these great plugins scratch the itch, or is there still a gap these plugins don't cover? The TUI angle specifically — running it headless from terminal without Obsidian open — **that's the piece none of them do**.
 
 ## Techstack brainstorming
 
