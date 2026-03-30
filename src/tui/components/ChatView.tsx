@@ -6,12 +6,14 @@ import { renderMarkdown, wrapLines, setRenderWidth } from "../../markdown/render
 import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
 import type { Message } from "../../markdown/types.ts";
 
-const ROLE_COLORS: Record<string, string> = {
-  user: "blue",
-  assistant: "green",
-  system: "yellow",
-  context: "magenta",
+// ANSI color codes for role headers
+const ROLE_ANSI: Record<string, string> = {
+  user: "\x1b[1;34m",      // bold blue
+  assistant: "\x1b[1;32m",  // bold green
+  system: "\x1b[1;33m",     // bold yellow
+  context: "\x1b[1;35m",    // bold magenta
 };
+const ANSI_RESET = "\x1b[0m";
 
 const ROLE_LABELS: Record<string, string> = {
   user: "You",
@@ -35,18 +37,18 @@ interface ChatViewProps {
 }
 
 /**
- * Pre-render all messages into an array of lines for line-based scrolling.
- * Each line in the result fits within panelWidth visible characters.
+ * Pre-render all messages into an array of plain text lines.
+ * Role headers use ANSI codes directly so the whole thing can be
+ * joined into a single string and rendered as one <Text> element.
  */
 function renderMessagesToLines(messages: Message[], panelWidth: number): string[] {
   const lines: string[] = [];
   for (const msg of messages) {
-    const color = ROLE_COLORS[msg.role] ?? "white";
+    const ansi = ROLE_ANSI[msg.role] ?? "";
     const label = ROLE_LABELS[msg.role] ?? msg.role;
-    lines.push(`\x1b_ROLE:${color}:${label}\x1b\\`);
+    lines.push(`${ansi}${label}${ANSI_RESET}`);
     const rendered = msg.content ? renderMarkdown(msg.content) : "";
     const contentLines = rendered.split("\n");
-    // Wrap lines that exceed panel width
     const wrapped = wrapLines(contentLines, panelWidth);
     lines.push(...wrapped);
     lines.push(""); // blank line between messages
@@ -68,18 +70,15 @@ export function ChatView({
   scrollRef,
 }: ChatViewProps) {
   const { columns: termColumns } = useTerminalSize();
-  // scrollOffset = -1 means pinned to bottom
   const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
 
   // Panel width: terminal width minus file tree (32) minus chat borders (2) + padding (2) + safety margin (2)
   const panelWidth = Math.max(20, termColumns - 32 - 8);
 
-  // Estimate visible lines for scroll math (title=1, input=3, borders=2, padding=1)
   const contentHeight = Math.max(1, viewportHeight - 4);
 
-  // Pre-render messages to lines, accounting for panel width
-  // setRenderWidth must be called BEFORE renderMessagesToLines so marked-terminal uses the right width
+  // Pre-render messages to lines
   const allLines = useMemo(() => {
     setRenderWidth(panelWidth);
     return renderMessagesToLines(messages, panelWidth);
@@ -94,7 +93,7 @@ export function ChatView({
     setScrollOffset((current) => {
       const currentOffset = current === -1 ? maxOffset : Math.min(current, maxOffset);
       const next = currentOffset + delta;
-      if (next >= maxOffset) return -1; // re-pin
+      if (next >= maxOffset) return -1;
       return Math.max(0, next);
     });
   }, [maxOffset]);
@@ -103,7 +102,6 @@ export function ChatView({
     if (scrollRef) scrollRef.current = { scrollBy };
   }, [scrollRef, scrollBy]);
 
-  // Re-pin when new messages arrive
   useEffect(() => {
     if (messages.length !== prevMessageCount.current) {
       setScrollOffset(-1);
@@ -111,7 +109,6 @@ export function ChatView({
     }
   }, [messages.length]);
 
-  // Pin during streaming
   useEffect(() => {
     if (isStreaming) setScrollOffset(-1);
   }, [isStreaming]);
@@ -127,9 +124,9 @@ export function ChatView({
     },
   );
 
-  // Show from actualOffset to end — don't cap with contentHeight.
-  // Ink's layout handles overflow; we just control the start position.
+  // Join visible lines into a single string for one <Text> render
   const visibleLines = allLines.slice(actualOffset);
+  const visibleText = visibleLines.join("\n");
   const hasHiddenAbove = actualOffset > 0;
 
   return (
@@ -140,7 +137,7 @@ export function ChatView({
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
     >
-      <Box marginBottom={1} justifyContent="space-between">
+      <Box justifyContent="space-between">
         <Box>
           <Text bold>{title}</Text>
           {messages.length > 0 && (
@@ -164,20 +161,8 @@ export function ChatView({
             {hasHiddenAbove && (
               <Text dimColor>  ↑ scroll up for more</Text>
             )}
-            {visibleLines.map((line, i) => {
-              // Check for role header tag
-              const roleMatch = line.match(/^\x1b_ROLE:(\w+):(.+)\x1b\\$/);
-              if (roleMatch) {
-                return (
-                  <Text key={actualOffset + i} bold color={roleMatch[1]}>
-                    {roleMatch[2]}
-                  </Text>
-                );
-              }
-              return <Text key={actualOffset + i}>{line}</Text>;
-            })}
+            <Text>{visibleText}</Text>
 
-            {/* Streaming response */}
             {isStreaming && (
               <Box flexDirection="column" marginBottom={1}>
                 <Text bold color="green">
@@ -191,9 +176,7 @@ export function ChatView({
             )}
 
             {error && (
-              <Box marginBottom={1}>
-                <Text color="red">Error: {error}</Text>
-              </Box>
+              <Text color="red">Error: {error}</Text>
             )}
           </Box>
 
