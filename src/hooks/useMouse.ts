@@ -10,6 +10,30 @@ export interface MouseEvent {
 
 const SGR_MOUSE_RE = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
 
+function parseMouse(str: string, callback: (event: MouseEvent) => void): boolean {
+  SGR_MOUSE_RE.lastIndex = 0;
+  let found = false;
+  let match;
+  while ((match = SGR_MOUSE_RE.exec(str)) !== null) {
+    found = true;
+    const button = parseInt(match[1]!, 10);
+    const x = parseInt(match[2]!, 10);
+    const y = parseInt(match[3]!, 10);
+    const isRelease = match[4] === "m";
+
+    if (button === 64) {
+      callback({ type: "wheelUp", x, y, button });
+    } else if (button === 65) {
+      callback({ type: "wheelDown", x, y, button });
+    } else if (isRelease) {
+      callback({ type: "release", x, y, button });
+    } else {
+      callback({ type: "press", x, y, button });
+    }
+  }
+  return found;
+}
+
 export function useMouse(onMouse: (event: MouseEvent) => void) {
   const { stdin } = useStdin();
   const { stdout } = useStdout();
@@ -23,52 +47,36 @@ export function useMouse(onMouse: (event: MouseEvent) => void) {
     stdout.write("\x1b[?1000h"); // Button press/release tracking
     stdout.write("\x1b[?1006h"); // SGR extended coordinates
 
-    // Monkey-patch stdin.emit to intercept mouse sequences BEFORE Ink sees them.
-    // This prevents raw escape codes from appearing as text in the UI.
-    const originalEmit = stdin.emit.bind(stdin);
+    // Intercept stdin.read() — this is how Ink v6 reads input.
+    // We strip mouse sequences from the returned data so Ink never sees them.
+    const originalRead = stdin.read.bind(stdin);
 
-    stdin.emit = function (event: string, ...args: unknown[]): boolean {
-      if (event === "data") {
-        const data = args[0];
-        const str = typeof data === "string" ? data : Buffer.isBuffer(data) ? data.toString() : "";
+    (stdin as any).read = function (size?: number): Buffer | string | null {
+      const chunk = originalRead(size);
+      if (chunk === null) return null;
 
-        if (str && SGR_MOUSE_RE.test(str)) {
-          // Parse and dispatch all mouse events in this chunk
-          SGR_MOUSE_RE.lastIndex = 0;
-          let match;
-          while ((match = SGR_MOUSE_RE.exec(str)) !== null) {
-            const button = parseInt(match[1]!, 10);
-            const x = parseInt(match[2]!, 10);
-            const y = parseInt(match[3]!, 10);
-            const isRelease = match[4] === "m";
+      const str = typeof chunk === "string" ? chunk : Buffer.isBuffer(chunk) ? chunk.toString() : null;
+      if (!str) return chunk;
 
-            if (button === 64) {
-              callbackRef.current({ type: "wheelUp", x, y, button });
-            } else if (button === 65) {
-              callbackRef.current({ type: "wheelDown", x, y, button });
-            } else if (isRelease) {
-              callbackRef.current({ type: "release", x, y, button });
-            } else {
-              callbackRef.current({ type: "press", x, y, button });
-            }
-          }
+      // Check for mouse sequences
+      if (!SGR_MOUSE_RE.test(str)) return chunk;
+      SGR_MOUSE_RE.lastIndex = 0;
 
-          // Strip mouse sequences from the data, pass remainder to Ink
-          const remaining = str.replace(SGR_MOUSE_RE, "");
-          if (remaining.length > 0) {
-            return originalEmit(event, remaining);
-          }
-          // Fully consumed — don't pass to Ink
-          return true;
-        }
+      // Parse and dispatch mouse events
+      parseMouse(str, callbackRef.current);
+
+      // Strip mouse sequences, return remaining data to Ink
+      const remaining = str.replace(SGR_MOUSE_RE, "");
+      if (remaining.length === 0) {
+        // Everything was mouse data — return null so Ink's read loop continues
+        return null;
       }
-
-      return originalEmit(event, ...args);
+      return Buffer.from(remaining);
     };
 
     return () => {
-      // Restore original emit
-      stdin.emit = originalEmit;
+      // Restore original read
+      (stdin as any).read = originalRead;
       // Disable mouse tracking
       stdout.write("\x1b[?1006l");
       stdout.write("\x1b[?1000l");
