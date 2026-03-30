@@ -76,7 +76,8 @@ export function ChatView({
   // Panel width: terminal width minus file tree (32) minus chat borders (2) + padding (2) + safety margin (2)
   const panelWidth = Math.max(20, termColumns - 32 - 8);
 
-  const contentHeight = Math.max(1, viewportHeight - 4);
+  // title(1) + title margin(1) + scroll indicator(1) + input border(1) + input(1) + input border(1) + bottom border(1) = 7
+  const contentHeight = Math.max(1, viewportHeight - 7);
 
   // Pre-render messages to lines
   const allLines = useMemo(() => {
@@ -125,7 +126,7 @@ export function ChatView({
   );
 
   // Join visible lines into a single string for one <Text> render
-  const visibleLines = allLines.slice(actualOffset);
+  const visibleLines = allLines.slice(actualOffset, actualOffset + contentHeight);
   const visibleText = ANSI_RESET + visibleLines.join("\n");
   const hasHiddenAbove = actualOffset > 0;
 
