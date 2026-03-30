@@ -112,8 +112,8 @@ export function ChatView({
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) scrollBy(-5);
-      if (key.downArrow) scrollBy(5);
+      if (key.upArrow) scrollBy(-10);
+      if (key.downArrow) scrollBy(10);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }
@@ -133,10 +133,15 @@ export function ChatView({
       paddingX={1}
       overflowY="hidden"
     >
-      <Box marginBottom={1}>
-        <Text bold>{title}</Text>
-        {messages.length > 0 && (
-          <Text dimColor> ({messages.length} messages)</Text>
+      <Box marginBottom={1} justifyContent="space-between">
+        <Box>
+          <Text bold>{title}</Text>
+          {messages.length > 0 && (
+            <Text dimColor> ({messages.length} messages)</Text>
+          )}
+        </Box>
+        {!pinnedToBottom && totalLines > 0 && (
+          <Text color="yellow">[{actualOffset + contentHeight}/{totalLines}]</Text>
         )}
       </Box>
 
