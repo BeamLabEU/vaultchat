@@ -10,18 +10,11 @@ export interface MouseEvent {
 
 const SGR_MOUSE_RE = /\x1b\[<(\d+);(\d+);(\d+)([Mm])/g;
 
-const SCROLL_THROTTLE_MS = 50;
-
 export function useMouse(onMouse: (event: MouseEvent) => void) {
   const { stdin } = useStdin();
   const { stdout } = useStdout();
   const callbackRef = useRef(onMouse);
   callbackRef.current = onMouse;
-
-  // Accumulate scroll ticks and flush on a timer
-  const scrollAccum = useRef(0);
-  const scrollX = useRef(0);
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!stdin || !stdout) return;
@@ -30,35 +23,12 @@ export function useMouse(onMouse: (event: MouseEvent) => void) {
     stdout.write("\x1b[?1000h");
     stdout.write("\x1b[?1006h");
 
-    const flushScroll = () => {
-      scrollTimer.current = null;
-      const delta = scrollAccum.current;
-      const x = scrollX.current;
-      scrollAccum.current = 0;
-      if (delta !== 0) {
-        callbackRef.current({
-          type: delta < 0 ? "wheelUp" : "wheelDown",
-          x,
-          y: 0,
-          button: delta < 0 ? 64 : 65,
-        });
-      }
-    };
-
     const handleMouse = (button: number, x: number, y: number, isRelease: boolean) => {
-      // Wheel events: accumulate and throttle
-      if (button === 64 || button === 65) {
-        const dir = button === 64 ? -1 : 1;
-        scrollAccum.current += dir;
-        scrollX.current = x;
-        if (!scrollTimer.current) {
-          scrollTimer.current = setTimeout(flushScroll, SCROLL_THROTTLE_MS);
-        }
-        return;
-      }
-
-      // Click events: dispatch immediately
-      if (isRelease) {
+      if (button === 64) {
+        callbackRef.current({ type: "wheelUp", x, y, button });
+      } else if (button === 65) {
+        callbackRef.current({ type: "wheelDown", x, y, button });
+      } else if (isRelease) {
         callbackRef.current({ type: "release", x, y, button });
       } else {
         callbackRef.current({ type: "press", x, y, button });
@@ -97,7 +67,6 @@ export function useMouse(onMouse: (event: MouseEvent) => void) {
 
     return () => {
       (stdin as any).read = originalRead;
-      if (scrollTimer.current) clearTimeout(scrollTimer.current);
       stdout.write("\x1b[?1006l");
       stdout.write("\x1b[?1000l");
     };
