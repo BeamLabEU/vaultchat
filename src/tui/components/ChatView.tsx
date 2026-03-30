@@ -72,19 +72,18 @@ export function ChatView({
   const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
 
-  // Panel width: terminal width minus file tree (32) minus borders/padding (6)
-  const panelWidth = Math.max(20, termColumns - 32 - 6);
-
-  // Update marked-terminal width
-  useEffect(() => {
-    setRenderWidth(panelWidth);
-  }, [panelWidth]);
+  // Panel width: terminal width minus file tree (32) minus chat borders (2) + padding (2) + safety margin (2)
+  const panelWidth = Math.max(20, termColumns - 32 - 8);
 
   // Estimate visible lines for scroll math (title=1, input=3, borders=2, padding=1)
   const contentHeight = Math.max(1, viewportHeight - 4);
 
   // Pre-render messages to lines, accounting for panel width
-  const allLines = useMemo(() => renderMessagesToLines(messages, panelWidth), [messages, panelWidth]);
+  // setRenderWidth must be called BEFORE renderMessagesToLines so marked-terminal uses the right width
+  const allLines = useMemo(() => {
+    setRenderWidth(panelWidth);
+    return renderMessagesToLines(messages, panelWidth);
+  }, [messages, panelWidth]);
   const totalLines = allLines.length;
 
   const maxOffset = Math.max(0, totalLines - contentHeight);
