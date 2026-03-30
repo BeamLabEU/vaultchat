@@ -126,7 +126,7 @@ export function ChatView({
 
   // Join visible lines into a single string for one <Text> render
   const visibleLines = allLines.slice(actualOffset);
-  const visibleText = visibleLines.join("\n");
+  const visibleText = ANSI_RESET + visibleLines.join("\n");
   const hasHiddenAbove = actualOffset > 0;
 
   return (
@@ -137,7 +137,7 @@ export function ChatView({
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
     >
-      <Box justifyContent="space-between">
+      <Box justifyContent="space-between" marginBottom={1}>
         <Box>
           <Text bold>{title}</Text>
           {messages.length > 0 && (
