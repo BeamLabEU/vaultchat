@@ -55,7 +55,8 @@ export function FileTree({
     <Box
       flexDirection="column"
       width={32}
-      borderStyle={focused ? "bold" : "single"}
+      flexShrink={0}
+      borderStyle="single"
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
     >

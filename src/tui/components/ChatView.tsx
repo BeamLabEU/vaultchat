@@ -124,7 +124,7 @@ export function ChatView({
     <Box
       flexDirection="column"
       flexGrow={1}
-      borderStyle={focused ? "bold" : "single"}
+      borderStyle="single"
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
       overflowY="hidden"
