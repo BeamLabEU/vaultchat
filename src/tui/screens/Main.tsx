@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { Box, Text, useInput, useStdout, useApp } from "ink";
+import { Box, Text, useInput, useApp } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
 import { ModelSwitcher } from "../components/ModelSwitcher.tsx";
@@ -7,6 +7,7 @@ import { Settings } from "./Settings.tsx";
 import { useFileTree } from "../../hooks/useFileTree.ts";
 import { useChat } from "../../hooks/useChat.ts";
 import { useMouse } from "../../hooks/useMouse.ts";
+import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
 import { createNewChat } from "../../vault/files.ts";
 import { saveConfig, type Config } from "../../vault/config.ts";
 
@@ -24,8 +25,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [showModelSwitcher, setShowModelSwitcher] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { stdout } = useStdout();
-  const termHeight = stdout?.rows ?? 24;
+  const { rows: termHeight } = useTerminalSize();
 
   const { exit } = useApp();
   const cwd = process.cwd();

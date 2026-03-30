@@ -32,41 +32,48 @@ export function ChatView({
   onCancelStreaming,
   scrollRef,
 }: ChatViewProps) {
-  const [pinnedToBottom, setPinnedToBottom] = useState(true);
-  const [scrollOffset, setScrollOffset] = useState(0);
+  // displayStart = index of the first message to show
+  // -1 means "pinned to bottom" (auto-calculate from end)
+  const [displayStart, setDisplayStart] = useState(-1);
   const prevMessageCount = useRef(messages.length);
 
-  const scrollBy = useCallback((delta: number) => {
-    if (delta < 0) {
-      setPinnedToBottom(false);
-      setScrollOffset((s) => Math.max(0, s + delta));
-    } else {
-      setScrollOffset((s) => {
-        const next = s + delta;
-        if (next >= messages.length - 1) {
-          setPinnedToBottom(true);
-        }
-        return Math.min(next, Math.max(0, messages.length - 1));
-      });
-    }
-  }, [messages.length]);
+  const availableHeight = viewportHeight - 5;
+  const estimatedVisibleCount = Math.max(1, Math.floor(availableHeight / 3));
 
-  // Expose scroll method via ref (for mouse events from parent)
+  // Calculate the actual start index
+  const maxStart = Math.max(0, messages.length - estimatedVisibleCount);
+  const pinnedToBottom = displayStart === -1;
+  const actualStart = pinnedToBottom ? maxStart : Math.min(displayStart, maxStart);
+
+  const scrollBy = useCallback((delta: number) => {
+    setDisplayStart((current) => {
+      // If pinned, unpin at the current bottom position first
+      const currentStart = current === -1 ? maxStart : Math.min(current, maxStart);
+      const next = currentStart + delta;
+
+      // If scrolled to or past the end, re-pin
+      if (next >= maxStart) return -1;
+
+      return Math.max(0, next);
+    });
+  }, [maxStart]);
+
+  // Expose scroll method via ref
   useEffect(() => {
     if (scrollRef) scrollRef.current = { scrollBy };
   }, [scrollRef, scrollBy]);
 
-  // Re-pin to bottom when new messages arrive
+  // Re-pin when new messages arrive
   useEffect(() => {
     if (messages.length !== prevMessageCount.current) {
-      setPinnedToBottom(true);
+      setDisplayStart(-1);
       prevMessageCount.current = messages.length;
     }
   }, [messages.length]);
 
-  // Always pin during streaming
+  // Pin during streaming
   useEffect(() => {
-    if (isStreaming) setPinnedToBottom(true);
+    if (isStreaming) setDisplayStart(-1);
   }, [isStreaming]);
 
   useInput(
@@ -80,19 +87,8 @@ export function ChatView({
     },
   );
 
-  // Calculate visible messages
-  const availableHeight = viewportHeight - 5;
-  const estimatedVisibleCount = Math.max(1, Math.floor(availableHeight / 3));
-
-  let displayStart: number;
-  if (pinnedToBottom) {
-    displayStart = Math.max(0, messages.length - estimatedVisibleCount);
-  } else {
-    displayStart = Math.min(scrollOffset, Math.max(0, messages.length - 1));
-  }
-
-  const visibleMessages = messages.slice(displayStart);
-  const hasHiddenAbove = displayStart > 0;
+  const visibleMessages = messages.slice(actualStart);
+  const hasHiddenAbove = actualStart > 0;
 
   return (
     <Box
@@ -120,10 +116,10 @@ export function ChatView({
         <>
           <Box flexDirection="column" flexGrow={1} overflowY="hidden">
             {hasHiddenAbove && (
-              <Text dimColor>  ↑ {displayStart} earlier messages</Text>
+              <Text dimColor>  ↑ {actualStart} earlier messages</Text>
             )}
             {visibleMessages.map((msg, i) => (
-              <MessageBubble key={displayStart + i} message={msg} />
+              <MessageBubble key={actualStart + i} message={msg} />
             ))}
 
             {isStreaming && (
