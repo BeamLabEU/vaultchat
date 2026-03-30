@@ -139,7 +139,6 @@ export function ChatView({
       borderStyle="single"
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
-      overflowY="hidden"
     >
       <Box marginBottom={1} justifyContent="space-between">
         <Box>
