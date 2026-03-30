@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
 import { TextInput } from "@inkjs/ui";
 import { MessageBubble } from "./MessageBubble.tsx";
@@ -16,7 +16,7 @@ interface ChatViewProps {
   hasConversation: boolean;
   onSendMessage: (text: string) => void;
   onCancelStreaming: () => void;
-  externalScrollDelta?: number; // +N scroll down, -N scroll up (from mouse)
+  scrollRef?: React.MutableRefObject<{ scrollBy: (delta: number) => void } | null>;
 }
 
 export function ChatView({
@@ -30,12 +30,31 @@ export function ChatView({
   hasConversation,
   onSendMessage,
   onCancelStreaming,
-  externalScrollDelta,
+  scrollRef,
 }: ChatViewProps) {
-  // Pin to bottom by default. When user scrolls up, unpin.
   const [pinnedToBottom, setPinnedToBottom] = useState(true);
   const [scrollOffset, setScrollOffset] = useState(0);
   const prevMessageCount = useRef(messages.length);
+
+  const scrollBy = useCallback((delta: number) => {
+    if (delta < 0) {
+      setPinnedToBottom(false);
+      setScrollOffset((s) => Math.max(0, s + delta));
+    } else {
+      setScrollOffset((s) => {
+        const next = s + delta;
+        if (next >= messages.length - 1) {
+          setPinnedToBottom(true);
+        }
+        return Math.min(next, Math.max(0, messages.length - 1));
+      });
+    }
+  }, [messages.length]);
+
+  // Expose scroll method via ref (for mouse events from parent)
+  useEffect(() => {
+    if (scrollRef) scrollRef.current = { scrollBy };
+  }, [scrollRef, scrollBy]);
 
   // Re-pin to bottom when new messages arrive
   useEffect(() => {
@@ -50,54 +69,19 @@ export function ChatView({
     if (isStreaming) setPinnedToBottom(true);
   }, [isStreaming]);
 
-  // Handle external scroll events (mouse wheel)
-  useEffect(() => {
-    if (!externalScrollDelta) return;
-    if (externalScrollDelta < 0) {
-      // Scroll up
-      setPinnedToBottom(false);
-      setScrollOffset((s) => Math.max(0, s + externalScrollDelta));
-    } else {
-      // Scroll down
-      setScrollOffset((s) => {
-        const next = s + externalScrollDelta;
-        if (next >= messages.length - 1) {
-          setPinnedToBottom(true);
-        }
-        return next;
-      });
-    }
-  }, [externalScrollDelta]);
-
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) {
-        setPinnedToBottom(false);
-        setScrollOffset((s) => Math.max(0, s - 3));
-      }
-      if (key.downArrow) {
-        setScrollOffset((s) => {
-          const next = s + 3;
-          // If scrolled near the end, re-pin
-          const totalItems = messages.length + (isStreaming ? 1 : 0);
-          if (next >= totalItems - 1) {
-            setPinnedToBottom(true);
-          }
-          return next;
-        });
-      }
+      if (key.upArrow) scrollBy(-1);
+      if (key.downArrow) scrollBy(1);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }
     },
   );
 
-  // When pinned, show the last N messages that fit
-  // Simple approach: show last messages, starting from the end
-  const totalMessages = messages.length + (isStreaming ? 1 : 0);
-  const availableHeight = viewportHeight - 5; // title, input box, borders
-  // Rough estimate: each message takes ~3 lines (label + content + margin)
+  // Calculate visible messages
+  const availableHeight = viewportHeight - 5;
   const estimatedVisibleCount = Math.max(1, Math.floor(availableHeight / 3));
 
   let displayStart: number;
@@ -134,7 +118,6 @@ export function ChatView({
         </Box>
       ) : (
         <>
-          {/* Messages */}
           <Box flexDirection="column" flexGrow={1} overflowY="hidden">
             {hasHiddenAbove && (
               <Text dimColor>  ↑ {displayStart} earlier messages</Text>
@@ -143,7 +126,6 @@ export function ChatView({
               <MessageBubble key={displayStart + i} message={msg} />
             ))}
 
-            {/* Streaming response */}
             {isStreaming && (
               <Box flexDirection="column" marginBottom={1}>
                 <Text bold color="green">
@@ -156,7 +138,6 @@ export function ChatView({
               </Box>
             )}
 
-            {/* Error display */}
             {error && (
               <Box marginBottom={1}>
                 <Text color="red">Error: {error}</Text>
@@ -164,7 +145,6 @@ export function ChatView({
             )}
           </Box>
 
-          {/* Input area */}
           <Box borderStyle="single" borderColor="gray" paddingX={1}>
             {isStreaming ? (
               <Text dimColor>Streaming... (Escape to cancel)</Text>

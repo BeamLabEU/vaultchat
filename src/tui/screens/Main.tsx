@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Box, Text, useInput, useStdout, useApp } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
@@ -24,7 +24,6 @@ export function Main({ config: initialConfig }: MainProps) {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [showModelSwitcher, setShowModelSwitcher] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [chatScrollDelta, setChatScrollDelta] = useState(0);
   const { stdout } = useStdout();
   const termHeight = stdout?.rows ?? 24;
 
@@ -33,12 +32,14 @@ export function Main({ config: initialConfig }: MainProps) {
   const fileTree = useFileTree(cwd);
   const chat = useChat(config);
 
+  // Ref-based scroll for ChatView — avoids re-rendering Main on mouse scroll
+  const chatScrollRef = useRef<{ scrollBy: (delta: number) => void } | null>(null);
+
   // Mouse support: scroll wheel + click to switch panels
   useMouse((event) => {
     if (showModelSwitcher || showSettings) return;
 
     if (event.type === "press" && event.button === 0) {
-      // Left click: switch panel based on x position
       setActivePanel(event.x <= FILE_TREE_WIDTH ? "files" : "chat");
     }
 
@@ -46,8 +47,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveUp();
       } else {
-        // Use a unique negative value each time to trigger the effect
-        setChatScrollDelta(-3 + Math.random() * 0.001);
+        chatScrollRef.current?.scrollBy(-1);
       }
     }
 
@@ -55,7 +55,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveDown();
       } else {
-        setChatScrollDelta(3 + Math.random() * 0.001);
+        chatScrollRef.current?.scrollBy(1);
       }
     }
   });
@@ -68,7 +68,7 @@ export function Main({ config: initialConfig }: MainProps) {
   }, [currentFile]);
 
   useInput((input, key) => {
-    if (showModelSwitcher || showSettings) return; // Modals handle own input
+    if (showModelSwitcher || showSettings) return;
     if (key.tab) {
       setActivePanel((p) => (p === "files" ? "chat" : "files"));
     }
@@ -81,7 +81,6 @@ export function Main({ config: initialConfig }: MainProps) {
     if (key.ctrl && input === "n") {
       handleNewChat();
     }
-    // Graceful quit: cancel streaming first, then exit
     if (key.ctrl && input === "c") {
       if (chat.isStreaming) {
         chat.cancelStreaming();
@@ -131,7 +130,6 @@ export function Main({ config: initialConfig }: MainProps) {
       setConfig(newConfig);
       await saveConfig(newConfig);
 
-      // Update current conversation's frontmatter if one is open
       if (chat.conversation) {
         const updated = {
           ...chat.conversation,
@@ -182,7 +180,6 @@ export function Main({ config: initialConfig }: MainProps) {
           />
         </Box>
       ) : (
-        /* Main content */
         <Box flexGrow={1}>
           <FileTree
             files={fileTree.files}
@@ -205,7 +202,7 @@ export function Main({ config: initialConfig }: MainProps) {
             hasConversation={!!chat.conversation}
             onSendMessage={handleSendMessage}
             onCancelStreaming={chat.cancelStreaming}
-            externalScrollDelta={chatScrollDelta}
+            scrollRef={chatScrollRef}
           />
         </Box>
       )}
