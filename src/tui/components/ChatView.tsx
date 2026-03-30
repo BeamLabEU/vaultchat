@@ -80,8 +80,8 @@ export function ChatView({
     setRenderWidth(panelWidth);
   }, [panelWidth]);
 
-  // Available lines for message content (minus title, input box, borders)
-  const contentHeight = Math.max(1, viewportHeight - 6);
+  // Estimate visible lines for scroll math (title=1, input=3, borders=2, padding=1)
+  const contentHeight = Math.max(1, viewportHeight - 4);
 
   // Pre-render messages to lines, accounting for panel width
   const allLines = useMemo(() => renderMessagesToLines(messages, panelWidth), [messages, panelWidth]);
@@ -128,8 +128,9 @@ export function ChatView({
     },
   );
 
-  // Get visible slice of lines
-  const visibleLines = allLines.slice(actualOffset, actualOffset + contentHeight);
+  // Show from actualOffset to end — don't cap with contentHeight.
+  // Ink's layout handles overflow; we just control the start position.
+  const visibleLines = allLines.slice(actualOffset);
   const hasHiddenAbove = actualOffset > 0;
 
   return (
