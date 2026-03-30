@@ -6,8 +6,11 @@ import { ModelSwitcher } from "../components/ModelSwitcher.tsx";
 import { Settings } from "./Settings.tsx";
 import { useFileTree } from "../../hooks/useFileTree.ts";
 import { useChat } from "../../hooks/useChat.ts";
+import { useMouse } from "../../hooks/useMouse.ts";
 import { createNewChat } from "../../vault/files.ts";
 import { saveConfig, type Config } from "../../vault/config.ts";
+
+const FILE_TREE_WIDTH = 32;
 
 type Panel = "files" | "chat";
 
@@ -21,6 +24,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [showModelSwitcher, setShowModelSwitcher] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [chatScrollDelta, setChatScrollDelta] = useState(0);
   const { stdout } = useStdout();
   const termHeight = stdout?.rows ?? 24;
 
@@ -28,6 +32,33 @@ export function Main({ config: initialConfig }: MainProps) {
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
   const chat = useChat(config);
+
+  // Mouse support: scroll wheel + click to switch panels
+  useMouse((event) => {
+    if (showModelSwitcher || showSettings) return;
+
+    if (event.type === "press" && event.button === 0) {
+      // Left click: switch panel based on x position
+      setActivePanel(event.x <= FILE_TREE_WIDTH ? "files" : "chat");
+    }
+
+    if (event.type === "wheelUp") {
+      if (event.x <= FILE_TREE_WIDTH) {
+        fileTree.moveUp();
+      } else {
+        // Use a unique negative value each time to trigger the effect
+        setChatScrollDelta(-3 + Math.random() * 0.001);
+      }
+    }
+
+    if (event.type === "wheelDown") {
+      if (event.x <= FILE_TREE_WIDTH) {
+        fileTree.moveDown();
+      } else {
+        setChatScrollDelta(3 + Math.random() * 0.001);
+      }
+    }
+  });
 
   // Load conversation when file changes
   useEffect(() => {
@@ -174,6 +205,7 @@ export function Main({ config: initialConfig }: MainProps) {
             hasConversation={!!chat.conversation}
             onSendMessage={handleSendMessage}
             onCancelStreaming={chat.cancelStreaming}
+            externalScrollDelta={chatScrollDelta}
           />
         </Box>
       )}
