@@ -160,7 +160,7 @@ export function ChatView({
         </Box>
       ) : (
         <>
-          <Box flexDirection="column" flexGrow={1} overflowY="hidden">
+          <Box flexDirection="column" flexGrow={1} justifyContent="flex-end">
             {hasHiddenAbove && (
               <Text dimColor>  ↑ scroll up for more</Text>
             )}
