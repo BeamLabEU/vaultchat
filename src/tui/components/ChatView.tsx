@@ -1,9 +1,23 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Box, Text, useInput } from "ink";
 import { TextInput } from "@inkjs/ui";
-import { MessageBubble } from "./MessageBubble.tsx";
 import { StreamingText } from "./StreamingText.tsx";
+import { renderMarkdown } from "../../markdown/render.ts";
 import type { Message } from "../../markdown/types.ts";
+
+const ROLE_COLORS: Record<string, string> = {
+  user: "blue",
+  assistant: "green",
+  system: "yellow",
+  context: "magenta",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  user: "You",
+  assistant: "Assistant",
+  system: "System",
+  context: "Context",
+};
 
 interface ChatViewProps {
   title: string;
@@ -19,6 +33,24 @@ interface ChatViewProps {
   scrollRef?: React.MutableRefObject<{ scrollBy: (delta: number) => void; getState: () => string } | null>;
 }
 
+/**
+ * Pre-render all messages into an array of lines for line-based scrolling.
+ */
+function renderMessagesToLines(messages: Message[]): string[] {
+  const lines: string[] = [];
+  for (const msg of messages) {
+    const color = ROLE_COLORS[msg.role] ?? "white";
+    const label = ROLE_LABELS[msg.role] ?? msg.role;
+    // Role header as a special tagged line
+    lines.push(`\x1b_ROLE:${color}:${label}\x1b\\`);
+    const rendered = msg.content ? renderMarkdown(msg.content) : "";
+    const contentLines = rendered.split("\n");
+    lines.push(...contentLines);
+    lines.push(""); // blank line between messages
+  }
+  return lines;
+}
+
 export function ChatView({
   title,
   messages,
@@ -32,36 +64,33 @@ export function ChatView({
   onCancelStreaming,
   scrollRef,
 }: ChatViewProps) {
-  // displayStart = index of the first message to show
-  // -1 means "pinned to bottom" (auto-calculate from end)
-  const [displayStart, setDisplayStart] = useState(-1);
+  // scrollOffset = -1 means pinned to bottom
+  const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
 
-  const availableHeight = viewportHeight - 5;
-  const estimatedVisibleCount = Math.max(1, Math.floor(availableHeight / 3));
+  // Available lines for message content (minus title, input box, borders)
+  const contentHeight = Math.max(1, viewportHeight - 6);
 
-  // Calculate the actual start index
-  const maxStart = Math.max(0, messages.length - estimatedVisibleCount);
-  const pinnedToBottom = displayStart === -1;
-  const actualStart = pinnedToBottom ? maxStart : Math.min(displayStart, maxStart);
+  // Pre-render messages to lines
+  const allLines = useMemo(() => renderMessagesToLines(messages), [messages]);
+  const totalLines = allLines.length;
+
+  const maxOffset = Math.max(0, totalLines - contentHeight);
+  const pinnedToBottom = scrollOffset === -1;
+  const actualOffset = pinnedToBottom ? maxOffset : Math.min(scrollOffset, maxOffset);
 
   const scrollBy = useCallback((delta: number) => {
-    setDisplayStart((current) => {
-      // If pinned, unpin at the current bottom position first
-      const currentStart = current === -1 ? maxStart : Math.min(current, maxStart);
-      const next = currentStart + delta;
-
-      // If scrolled to or past the end, re-pin
-      if (next >= maxStart) return -1;
-
+    setScrollOffset((current) => {
+      const currentOffset = current === -1 ? maxOffset : Math.min(current, maxOffset);
+      const next = currentOffset + delta;
+      if (next >= maxOffset) return -1; // re-pin
       return Math.max(0, next);
     });
-  }, [maxStart]);
+  }, [maxOffset]);
 
-  // Expose scroll methods via ref
   const getState = useCallback(() => {
-    return `ds=${displayStart} actual=${actualStart} maxStart=${maxStart} msgs=${messages.length} vis=${estimatedVisibleCount}`;
-  }, [displayStart, actualStart, maxStart, messages.length, estimatedVisibleCount]);
+    return `off=${scrollOffset} actual=${actualOffset} max=${maxOffset} lines=${totalLines} vh=${contentHeight}`;
+  }, [scrollOffset, actualOffset, maxOffset, totalLines, contentHeight]);
 
   useEffect(() => {
     if (scrollRef) scrollRef.current = { scrollBy, getState };
@@ -70,29 +99,30 @@ export function ChatView({
   // Re-pin when new messages arrive
   useEffect(() => {
     if (messages.length !== prevMessageCount.current) {
-      setDisplayStart(-1);
+      setScrollOffset(-1);
       prevMessageCount.current = messages.length;
     }
   }, [messages.length]);
 
   // Pin during streaming
   useEffect(() => {
-    if (isStreaming) setDisplayStart(-1);
+    if (isStreaming) setScrollOffset(-1);
   }, [isStreaming]);
 
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) scrollBy(-1);
-      if (key.downArrow) scrollBy(1);
+      if (key.upArrow) scrollBy(-3);
+      if (key.downArrow) scrollBy(3);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }
     },
   );
 
-  const visibleMessages = messages.slice(actualStart);
-  const hasHiddenAbove = actualStart > 0;
+  // Get visible slice of lines
+  const visibleLines = allLines.slice(actualOffset, actualOffset + contentHeight);
+  const hasHiddenAbove = actualOffset > 0;
 
   return (
     <Box
@@ -120,12 +150,22 @@ export function ChatView({
         <>
           <Box flexDirection="column" flexGrow={1} overflowY="hidden">
             {hasHiddenAbove && (
-              <Text dimColor>  ↑ {actualStart} earlier messages</Text>
+              <Text dimColor>  ↑ scroll up for more</Text>
             )}
-            {visibleMessages.map((msg, i) => (
-              <MessageBubble key={actualStart + i} message={msg} />
-            ))}
+            {visibleLines.map((line, i) => {
+              // Check for role header tag
+              const roleMatch = line.match(/^\x1b_ROLE:(\w+):(.+)\x1b\\$/);
+              if (roleMatch) {
+                return (
+                  <Text key={actualOffset + i} bold color={roleMatch[1]}>
+                    {roleMatch[2]}
+                  </Text>
+                );
+              }
+              return <Text key={actualOffset + i}>{line}</Text>;
+            })}
 
+            {/* Streaming response */}
             {isStreaming && (
               <Box flexDirection="column" marginBottom={1}>
                 <Text bold color="green">
