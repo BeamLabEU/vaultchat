@@ -33,11 +33,15 @@ export function Main({ config: initialConfig }: MainProps) {
   const chat = useChat(config);
 
   // Ref-based scroll for ChatView — avoids re-rendering Main on mouse scroll
-  const chatScrollRef = useRef<{ scrollBy: (delta: number) => void } | null>(null);
+  const chatScrollRef = useRef<{ scrollBy: (delta: number) => void; getState: () => string } | null>(null);
+  const [debugInfo, setDebugInfo] = useState("waiting for events...");
 
   // Mouse support: scroll wheel + click to switch panels
   useMouse((event) => {
     if (showModelSwitcher || showSettings) return;
+
+    const scrollState = chatScrollRef.current?.getState() ?? "no-ref";
+    setDebugInfo(`mouse: ${event.type} x=${event.x} btn=${event.button} | scroll: ${scrollState}`);
 
     if (event.type === "press" && event.button === 0) {
       setActivePanel(event.x <= FILE_TREE_WIDTH ? "files" : "chat");
@@ -48,6 +52,8 @@ export function Main({ config: initialConfig }: MainProps) {
         fileTree.moveUp();
       } else {
         chatScrollRef.current?.scrollBy(-1);
+        const after = chatScrollRef.current?.getState() ?? "?";
+        setDebugInfo(`wheelUp x=${event.x} | before: ${scrollState} | after: ${after}`);
       }
     }
 
@@ -56,6 +62,8 @@ export function Main({ config: initialConfig }: MainProps) {
         fileTree.moveDown();
       } else {
         chatScrollRef.current?.scrollBy(1);
+        const after = chatScrollRef.current?.getState() ?? "?";
+        setDebugInfo(`wheelDown x=${event.x} | before: ${scrollState} | after: ${after}`);
       }
     }
   });
@@ -206,6 +214,11 @@ export function Main({ config: initialConfig }: MainProps) {
           />
         </Box>
       )}
+
+      {/* Debug bar */}
+      <Box paddingX={1}>
+        <Text color="yellow">[DBG] {debugInfo}</Text>
+      </Box>
 
       {/* Bottom bar */}
       <Box paddingX={1}>

@@ -16,7 +16,7 @@ interface ChatViewProps {
   hasConversation: boolean;
   onSendMessage: (text: string) => void;
   onCancelStreaming: () => void;
-  scrollRef?: React.MutableRefObject<{ scrollBy: (delta: number) => void } | null>;
+  scrollRef?: React.MutableRefObject<{ scrollBy: (delta: number) => void; getState: () => string } | null>;
 }
 
 export function ChatView({
@@ -58,10 +58,14 @@ export function ChatView({
     });
   }, [maxStart]);
 
-  // Expose scroll method via ref
+  // Expose scroll methods via ref
+  const getState = useCallback(() => {
+    return `ds=${displayStart} actual=${actualStart} maxStart=${maxStart} msgs=${messages.length} vis=${estimatedVisibleCount}`;
+  }, [displayStart, actualStart, maxStart, messages.length, estimatedVisibleCount]);
+
   useEffect(() => {
-    if (scrollRef) scrollRef.current = { scrollBy };
-  }, [scrollRef, scrollBy]);
+    if (scrollRef) scrollRef.current = { scrollBy, getState };
+  }, [scrollRef, scrollBy, getState]);
 
   // Re-pin when new messages arrive
   useEffect(() => {
