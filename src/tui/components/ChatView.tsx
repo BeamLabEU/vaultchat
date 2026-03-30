@@ -112,8 +112,8 @@ export function ChatView({
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) scrollBy(-3);
-      if (key.downArrow) scrollBy(3);
+      if (key.upArrow) scrollBy(-5);
+      if (key.downArrow) scrollBy(5);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }

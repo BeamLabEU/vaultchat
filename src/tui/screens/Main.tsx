@@ -51,7 +51,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveUp();
       } else {
-        chatScrollRef.current?.scrollBy(-1);
+        chatScrollRef.current?.scrollBy(-3);
         const after = chatScrollRef.current?.getState() ?? "?";
         setDebugInfo(`wheelUp x=${event.x} | before: ${scrollState} | after: ${after}`);
       }
@@ -61,7 +61,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveDown();
       } else {
-        chatScrollRef.current?.scrollBy(1);
+        chatScrollRef.current?.scrollBy(3);
         const after = chatScrollRef.current?.getState() ?? "?";
         setDebugInfo(`wheelDown x=${event.x} | before: ${scrollState} | after: ${after}`);
       }
