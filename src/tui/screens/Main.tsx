@@ -53,7 +53,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveUp();
       } else {
-        chatScrollRef.current?.scrollBy(-10);
+        chatScrollRef.current?.scrollBy(-5);
       }
       const after = chatScrollRef.current?.getState() ?? "?";
       setDebugInfo(`UP#${wheelCountRef.current.up} DN#${wheelCountRef.current.down} | ${after}`);
@@ -64,7 +64,7 @@ export function Main({ config: initialConfig }: MainProps) {
       if (event.x <= FILE_TREE_WIDTH) {
         fileTree.moveDown();
       } else {
-        chatScrollRef.current?.scrollBy(10);
+        chatScrollRef.current?.scrollBy(5);
       }
       const after = chatScrollRef.current?.getState() ?? "?";
       setDebugInfo(`UP#${wheelCountRef.current.up} DN#${wheelCountRef.current.down} | ${after}`);

@@ -112,8 +112,8 @@ export function ChatView({
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) scrollBy(-10);
-      if (key.downArrow) scrollBy(10);
+      if (key.upArrow) scrollBy(-5);
+      if (key.downArrow) scrollBy(5);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }
@@ -141,7 +141,7 @@ export function ChatView({
           )}
         </Box>
         {!pinnedToBottom && totalLines > 0 && (
-          <Text color="yellow">[{actualOffset + contentHeight}/{totalLines}]</Text>
+          <Text color="yellow">[{maxOffset - actualOffset}/{maxOffset}]</Text>
         )}
       </Box>
 
