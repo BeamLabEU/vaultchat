@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Box, Text, useInput } from "ink";
 import { TextInput } from "@inkjs/ui";
 import { StreamingText } from "./StreamingText.tsx";
-import { renderMarkdown } from "../../markdown/render.ts";
+import { renderMarkdown, wrapLines, setRenderWidth } from "../../markdown/render.ts";
+import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
 import type { Message } from "../../markdown/types.ts";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -35,17 +36,19 @@ interface ChatViewProps {
 
 /**
  * Pre-render all messages into an array of lines for line-based scrolling.
+ * Each line in the result fits within panelWidth visible characters.
  */
-function renderMessagesToLines(messages: Message[]): string[] {
+function renderMessagesToLines(messages: Message[], panelWidth: number): string[] {
   const lines: string[] = [];
   for (const msg of messages) {
     const color = ROLE_COLORS[msg.role] ?? "white";
     const label = ROLE_LABELS[msg.role] ?? msg.role;
-    // Role header as a special tagged line
     lines.push(`\x1b_ROLE:${color}:${label}\x1b\\`);
     const rendered = msg.content ? renderMarkdown(msg.content) : "";
     const contentLines = rendered.split("\n");
-    lines.push(...contentLines);
+    // Wrap lines that exceed panel width
+    const wrapped = wrapLines(contentLines, panelWidth);
+    lines.push(...wrapped);
     lines.push(""); // blank line between messages
   }
   return lines;
@@ -64,15 +67,24 @@ export function ChatView({
   onCancelStreaming,
   scrollRef,
 }: ChatViewProps) {
+  const { columns: termColumns } = useTerminalSize();
   // scrollOffset = -1 means pinned to bottom
   const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
 
+  // Panel width: terminal width minus file tree (32) minus borders/padding (6)
+  const panelWidth = Math.max(20, termColumns - 32 - 6);
+
+  // Update marked-terminal width
+  useEffect(() => {
+    setRenderWidth(panelWidth);
+  }, [panelWidth]);
+
   // Available lines for message content (minus title, input box, borders)
   const contentHeight = Math.max(1, viewportHeight - 6);
 
-  // Pre-render messages to lines
-  const allLines = useMemo(() => renderMessagesToLines(messages), [messages]);
+  // Pre-render messages to lines, accounting for panel width
+  const allLines = useMemo(() => renderMessagesToLines(messages, panelWidth), [messages, panelWidth]);
   const totalLines = allLines.length;
 
   const maxOffset = Math.max(0, totalLines - contentHeight);
