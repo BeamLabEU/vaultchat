@@ -55,7 +55,6 @@ if (args.includes("--update") || cmd === "update") {
   try {
     const result = await selfUpdate((msg) => console.log(msg));
     console.log(`\n✓ Updated: v${result.oldVersion} → v${result.newVersion}`);
-    console.log(`  Restart vaultchat to use the new version.`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Update failed";
     console.error(msg);
