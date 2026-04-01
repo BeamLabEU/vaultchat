@@ -9,6 +9,9 @@ out
 dist
 *.tgz
 
+# diagnostic reports
+reports
+
 # code coverage
 coverage
 *.lcov
