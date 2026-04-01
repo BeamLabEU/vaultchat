@@ -214,13 +214,13 @@ export function Main({ config: initialConfig }: MainProps) {
           </Text>
           <Text dimColor> v{getVersion()}</Text>
           {updateState?.status === "downloading" && (
-            <Text color="yellow"> ↑ updating to v{updateState.newVersion}...</Text>
+            <Text color="yellow"> ↓ downloading v{updateState.newVersion}...</Text>
           )}
           {updateState?.status === "ready" && (
-            <Text color="green"> ↑ v{updateState.newVersion} installed — restart to use</Text>
+            <Text color="green"> ✓ v{updateState.newVersion} installed — restart to use</Text>
           )}
           {updateState?.status === "failed" && (
-            <Text color="red"> ↑ update failed (run vaultchat update)</Text>
+            <Text color="red"> ✗ update failed (run vaultchat update)</Text>
           )}
         </Box>
         <Text dimColor>
