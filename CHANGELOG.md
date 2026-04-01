@@ -2,6 +2,23 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.0] - 2026-04-01
+
+### Added
+- Directory browsing in file tree with `..` navigation to parent
+- Directories shown in yellow above files, sorted alphabetically
+- Version number displayed in status bar (`VaultChat v0.2.0`)
+- Update-available notification in status bar when a newer release exists
+
+### Fixed
+- Long file names are now truncated with `…` instead of wrapping to multiple lines
+- File list sorted alphabetically (case-insensitive, natural number ordering) instead of by modification date
+- Opening an existing note and chatting no longer renames the file — auto-rename only applies to VaultChat-created chats
+
+### Changed
+- Renamed `CLAUDE.md` to `AGENTS.md` for agent-agnostic conventions
+- Moved `PLAN.md` and `SPEC.md` into `dev_docs/` directory
+
 ## [0.1.2] - 2026-04-01
 
 ### Fixed
@@ -42,6 +59,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.0]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.0
 [0.1.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.2
 [0.1.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.1
 [0.1.0]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.0

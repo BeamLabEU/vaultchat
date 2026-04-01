@@ -6,35 +6,54 @@ export interface FileEntry {
   name: string;
   path: string;
   modifiedAt: Date;
+  isDirectory: boolean;
 }
 
-export async function listMdFiles(dir: string): Promise<FileEntry[]> {
+export async function listEntries(dir: string): Promise<FileEntry[]> {
   try {
     const entries = await readdir(dir);
+    const dirs: FileEntry[] = [];
     const files: FileEntry[] = [];
 
     for (const entry of entries) {
-      if (!entry.endsWith(".md")) continue;
+      if (entry.startsWith(".")) continue;
       const fullPath = join(dir, entry);
       try {
         const info = await stat(fullPath);
-        if (info.isFile()) {
+        if (info.isDirectory()) {
+          dirs.push({
+            name: entry,
+            path: fullPath,
+            modifiedAt: info.mtime,
+            isDirectory: true,
+          });
+        } else if (entry.endsWith(".md") && info.isFile()) {
           files.push({
             name: entry.replace(/\.md$/, ""),
             path: fullPath,
             modifiedAt: info.mtime,
+            isDirectory: false,
           });
         }
       } catch {
-        // Skip files we can't stat
+        // Skip entries we can't stat
       }
     }
 
-    // Sort by modified date, newest first
-    return files.sort((a, b) => b.modifiedAt.getTime() - a.modifiedAt.getTime());
+    const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+    dirs.sort((a, b) => collator.compare(a.name, b.name));
+    files.sort((a, b) => collator.compare(a.name, b.name));
+
+    return [...dirs, ...files];
   } catch {
     return [];
   }
+}
+
+/** @deprecated Use listEntries instead */
+export async function listMdFiles(dir: string): Promise<FileEntry[]> {
+  const entries = await listEntries(dir);
+  return entries.filter((e) => !e.isDirectory);
 }
 
 export function watchDirectory(

@@ -12,6 +12,14 @@ interface FileTreeProps {
   onSelect: () => void;
 }
 
+// Sidebar width=32, border=2, paddingX=2, leading space=1 → 27 chars for label
+const MAX_LABEL_WIDTH = 27;
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max - 1) + "…";
+}
+
 export function FileTree({
   files,
   selectedIndex,
@@ -30,10 +38,15 @@ export function FileTree({
     },
   );
 
-  // All items: "New Chat" + files
-  const items: { label: string; isNewChat: boolean; dimColor?: boolean }[] = [
-    { label: "+ New Chat", isNewChat: true },
-    ...files.map((f) => ({ label: f.name, isNewChat: false })),
+  const dirs = files.filter((f) => f.isDirectory);
+  const mdFiles = files.filter((f) => !f.isDirectory);
+
+  // All items: "New Chat", "..", directories, then files
+  const items: { label: string; key: string; type: "newchat" | "parent" | "dir" | "file" }[] = [
+    { label: "+ New Chat", key: "__new_chat__", type: "newchat" },
+    { label: "..", key: "__parent__", type: "parent" },
+    ...dirs.map((f) => ({ label: f.name + "/", key: "d:" + f.path, type: "dir" as const })),
+    ...mdFiles.map((f) => ({ label: f.name, key: "f:" + f.path, type: "file" as const })),
   ];
 
   // Scrolling: keep selected item visible
@@ -51,6 +64,9 @@ export function FileTree({
   const hasMore = scrollOffset + maxVisible < totalItems;
   const hasLess = scrollOffset > 0;
 
+  const fileCount = mdFiles.length;
+  const dirCount = dirs.length;
+
   return (
     <Box
       flexDirection="column"
@@ -64,8 +80,8 @@ export function FileTree({
         <Text bold color="cyan">
           Files
         </Text>
-        {files.length > 0 && (
-          <Text dimColor> ({files.length})</Text>
+        {(fileCount > 0 || dirCount > 0) && (
+          <Text dimColor> ({dirCount > 0 ? `${dirCount}d, ${fileCount}f` : `${fileCount}`})</Text>
         )}
       </Box>
 
@@ -74,28 +90,43 @@ export function FileTree({
       {visibleItems.map((item, i) => {
         const actualIndex = scrollOffset + i;
         const isSelected = actualIndex === selectedIndex;
+        const sel = isSelected && focused;
+        const displayLabel = truncate(item.label, MAX_LABEL_WIDTH);
 
-        if (item.isNewChat) {
+        if (item.type === "newchat") {
           return (
             <Text
-              key="__new_chat__"
-              color={isSelected && focused ? "cyan" : "green"}
-              bold={isSelected && focused}
-              inverse={isSelected && focused}
+              key={item.key}
+              color={sel ? "cyan" : "green"}
+              bold={sel}
+              inverse={sel}
             >
-              {isSelected && focused ? " " : " "}{item.label}
+              {" "}{displayLabel}
+            </Text>
+          );
+        }
+
+        if (item.type === "parent" || item.type === "dir") {
+          return (
+            <Text
+              key={item.key}
+              color={sel ? "cyan" : "yellow"}
+              bold={sel}
+              inverse={sel}
+            >
+              {" "}{displayLabel}
             </Text>
           );
         }
 
         return (
           <Text
-            key={item.label}
-            color={isSelected && focused ? "cyan" : undefined}
-            bold={isSelected && focused}
-            inverse={isSelected && focused}
+            key={item.key}
+            color={sel ? "cyan" : undefined}
+            bold={sel}
+            inverse={sel}
           >
-            {isSelected && focused ? " " : " "}{item.label}
+            {" "}{displayLabel}
           </Text>
         );
       })}
@@ -104,7 +135,7 @@ export function FileTree({
 
       {files.length === 0 && (
         <Text dimColor italic>
-          No .md files found
+          No entries found
         </Text>
       )}
     </Box>

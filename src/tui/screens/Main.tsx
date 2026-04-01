@@ -10,6 +10,8 @@ import { useMouse } from "../../hooks/useMouse.ts";
 import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
 import { createNewChat } from "../../vault/files.ts";
 import { saveConfig, type Config } from "../../vault/config.ts";
+import { getVersion } from "../../version.ts";
+import { useUpdateNotification } from "../../hooks/useUpdateNotification.ts";
 
 const FILE_TREE_WIDTH = 32;
 
@@ -28,6 +30,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const { rows: termHeight } = useTerminalSize();
 
   const { exit } = useApp();
+  const updateInfo = useUpdateNotification();
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
   const chat = useChat(config);
@@ -92,30 +95,34 @@ export function Main({ config: initialConfig }: MainProps) {
 
   const handleNewChat = useCallback(async () => {
     const newPath = await createNewChat(
-      cwd,
+      fileTree.dir,
       config.activeModel,
       config.activeProvider
     );
     await fileTree.refresh();
     setCurrentFile(newPath);
     setActivePanel("chat");
-  }, [cwd, config, fileTree]);
+  }, [fileTree.dir, config, fileTree]);
 
   const handleFileSelect = useCallback(async () => {
     if (fileTree.isNewChatSelected) {
       const newPath = await createNewChat(
-        cwd,
+        fileTree.dir,
         config.activeModel,
         config.activeProvider
       );
       await fileTree.refresh();
       setCurrentFile(newPath);
       setActivePanel("chat");
+    } else if (fileTree.isParentDirSelected) {
+      fileTree.navigateUp();
+    } else if (fileTree.selectedEntry?.isDirectory) {
+      fileTree.navigateToDir(fileTree.selectedEntry.path);
     } else if (fileTree.selectedFile) {
       setCurrentFile(fileTree.selectedFile.path);
       setActivePanel("chat");
     }
-  }, [fileTree, cwd, config]);
+  }, [fileTree, config]);
 
   const handleSendMessage = useCallback(
     (text: string) => {
@@ -151,9 +158,15 @@ export function Main({ config: initialConfig }: MainProps) {
     <Box flexDirection="column" height={termHeight}>
       {/* Status bar */}
       <Box paddingX={1} justifyContent="space-between">
-        <Text bold color="cyan">
-          VaultChat
-        </Text>
+        <Box>
+          <Text bold color="cyan">
+            VaultChat
+          </Text>
+          <Text dimColor> v{getVersion()}</Text>
+          {updateInfo && (
+            <Text color="yellow"> ↑ v{updateInfo.latest} available</Text>
+          )}
+        </Box>
         <Text dimColor>
           {config.activeModel}{chat.isStreaming ? " (streaming...)" : ""}
         </Text>

@@ -37,5 +37,5 @@ src/
 
 ## Key Files
 
-- `SPEC.md` — full product spec and file format definition
-- `PLAN.md` — phased implementation plan with checkboxes
+- `dev_docs/SPEC.md` — full product spec and file format definition
+- `dev_docs/PLAN.md` — phased implementation plan with checkboxes

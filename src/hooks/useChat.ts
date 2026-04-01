@@ -8,7 +8,7 @@ import {
 } from "../vault/wikilinks.ts";
 import type { Conversation, Message } from "../markdown/types.ts";
 import type { Config } from "../vault/config.ts";
-import { dirname, join } from "node:path";
+import { dirname, join, basename } from "node:path";
 import { rename } from "node:fs/promises";
 
 export function useChat(config: Config) {
@@ -205,6 +205,10 @@ async function autoRenameChat(
   config: Config
 ): Promise<void> {
   try {
+    // Only rename files created by VaultChat (new-chat-YYYY-MM-DD-HHMMSS.md)
+    const filename = basename(conversation.filePath);
+    if (!/^new-chat-\d{4}-\d{2}-\d{2}-\d{6}\.md$/.test(filename)) return;
+
     const providerConfig = config.providers[config.activeProvider];
     if (!providerConfig) return;
 
