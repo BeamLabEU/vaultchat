@@ -63,7 +63,7 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max - 1) + "…";
 }
 
-export function FileTree({
+export const FileTree = React.memo(function FileTree({
   files,
   selectedIndex,
   focused,
@@ -181,4 +181,4 @@ export function FileTree({
       )}
     </Box>
   );
-}
+});

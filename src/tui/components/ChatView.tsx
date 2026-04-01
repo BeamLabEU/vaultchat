@@ -144,12 +144,10 @@ export function ChatView({
     },
   );
 
-  // When streaming, reserve lines for the streaming block (header + content/spinner)
-  const streamingLines = isStreaming ? Math.min(
-    Math.max(2, (streamingContent ? streamingContent.split("\n").length : 0) + 2),
-    Math.floor(contentHeight / 2),
-  ) : 0;
-  const messageHeight = contentHeight - streamingLines;
+  // When streaming, reserve a fixed block for the streaming area so the message
+  // text above doesn't jump around as the response grows
+  const streamingReserve = isStreaming ? Math.max(3, Math.floor(contentHeight / 3)) : 0;
+  const messageHeight = contentHeight - streamingReserve;
 
   // Join visible lines into a single string for one <Text> render
   const visibleLines = allLines.slice(actualOffset, actualOffset + messageHeight);
@@ -191,7 +189,7 @@ export function ChatView({
             <Text>{visibleText}</Text>
 
             {isStreaming && (
-              <Box flexDirection="column" marginBottom={1}>
+              <Box flexDirection="column" height={streamingReserve} overflow="hidden">
                 <Text bold color="green">
                   Assistant
                 </Text>
