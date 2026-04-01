@@ -31,6 +31,7 @@ interface ChatViewProps {
   streamingContent: string;
   error: string | null;
   hasConversation: boolean;
+  originalContent?: string;
   onSendMessage: (text: string) => void;
   onCancelStreaming: () => void;
   scrollRef?: React.MutableRefObject<{ scrollBy: (delta: number) => void } | null>;
@@ -41,8 +42,25 @@ interface ChatViewProps {
  * Role headers use ANSI codes directly so the whole thing can be
  * joined into a single string and rendered as one <Text> element.
  */
-function renderMessagesToLines(messages: Message[], panelWidth: number): string[] {
+function renderMessagesToLines(
+  messages: Message[],
+  panelWidth: number,
+  originalContent?: string
+): string[] {
   const lines: string[] = [];
+
+  // Show original non-chat content at the top
+  if (originalContent) {
+    lines.push(`\x1b[1;35mOriginal Note${ANSI_RESET}`);
+    const rendered = renderMarkdown(originalContent);
+    const contentLines = rendered.split("\n");
+    const wrapped = wrapLines(contentLines, panelWidth);
+    lines.push(...wrapped);
+    lines.push("");
+    lines.push(`\x1b[2m${"─".repeat(Math.min(40, panelWidth))}${ANSI_RESET}`);
+    lines.push("");
+  }
+
   for (const msg of messages) {
     const ansi = ROLE_ANSI[msg.role] ?? "";
     const label = ROLE_LABELS[msg.role] ?? msg.role;
@@ -65,6 +83,7 @@ export function ChatView({
   streamingContent,
   error,
   hasConversation,
+  originalContent,
   onSendMessage,
   onCancelStreaming,
   scrollRef,
@@ -82,8 +101,8 @@ export function ChatView({
   // Pre-render messages to lines
   const allLines = useMemo(() => {
     setRenderWidth(panelWidth);
-    return renderMessagesToLines(messages, panelWidth);
-  }, [messages, panelWidth]);
+    return renderMessagesToLines(messages, panelWidth, originalContent);
+  }, [messages, panelWidth, originalContent]);
   const totalLines = allLines.length;
 
   const maxOffset = Math.max(0, totalLines - contentHeight);

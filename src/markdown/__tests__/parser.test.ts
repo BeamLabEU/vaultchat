@@ -234,3 +234,104 @@ describe("round-trip", () => {
     expect(conv2.frontmatter.context).toEqual(conv1.frontmatter.context);
   });
 });
+
+describe("original content preservation", () => {
+  test("plain Obsidian file content is captured as originalContent", () => {
+    const input = `---
+title: My Research Notes
+---
+
+# Kubernetes Setup
+
+We use k3s on three nodes with Longhorn for storage.
+
+## Networking
+Traefik ingress with cert-manager for TLS.
+`;
+    const conv = parseConversation(input, "research.md");
+
+    expect(conv.messages).toHaveLength(0);
+    expect(conv.originalContent).toContain("Kubernetes Setup");
+    expect(conv.originalContent).toContain("Traefik ingress");
+  });
+
+  test("originalContent is preserved through serialize round-trip", () => {
+    const input = `---
+title: My Notes
+---
+
+# Important stuff
+
+This is my note content with **bold** and [links](https://example.com).
+`;
+    const conv = parseConversation(input, "notes.md");
+    expect(conv.originalContent).toBeTruthy();
+
+    const serialized = serializeConversation(conv);
+    const conv2 = parseConversation(serialized, "notes.md");
+
+    expect(conv2.originalContent).toBe(conv.originalContent);
+    expect(conv2.messages).toHaveLength(0);
+  });
+
+  test("originalContent preserved when messages are added", () => {
+    const input = `---
+title: My Notes
+---
+
+# Original content here
+
+Some important info.
+`;
+    const conv = parseConversation(input, "notes.md");
+
+    // Simulate adding chat messages
+    conv.messages.push({ role: "user", content: "Tell me about this note" });
+    conv.messages.push({ role: "assistant", content: "This note contains important info." });
+
+    const serialized = serializeConversation(conv);
+    const conv2 = parseConversation(serialized, "notes.md");
+
+    expect(conv2.originalContent).toContain("Original content here");
+    expect(conv2.originalContent).toContain("Some important info.");
+    expect(conv2.messages).toHaveLength(2);
+    expect(conv2.messages[0]!.role).toBe("user");
+    expect(conv2.messages[1]!.role).toBe("assistant");
+  });
+
+  test("VaultChat-native files have no originalContent", () => {
+    const conv = parseConversation(SPEC_EXAMPLE, "test.md");
+    expect(conv.originalContent).toBeUndefined();
+  });
+
+  test("mixed file: content before first role marker is preserved", () => {
+    const input = `---
+title: Mixed File
+date: 2026-03-28T14:32:00+02:00
+model: test/model
+provider: openrouter
+---
+
+# Project overview
+
+This is a project overview note.
+
+---
+
+###### user
+Summarize this for me
+
+---
+
+###### assistant
+This is a project overview note.
+`;
+    const conv = parseConversation(input, "mixed.md");
+
+    expect(conv.originalContent).toContain("Project overview");
+    expect(conv.originalContent).toContain("project overview note");
+    expect(conv.messages).toHaveLength(2);
+    expect(conv.messages[0]!.role).toBe("user");
+    expect(conv.messages[1]!.role).toBe("assistant");
+  });
+});

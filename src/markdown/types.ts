@@ -20,4 +20,6 @@ export interface Conversation {
   frontmatter: Frontmatter;
   messages: Message[];
   filePath: string;
+  /** Non-chat content found before the first role marker. Preserved on save and sent as context. */
+  originalContent?: string;
 }

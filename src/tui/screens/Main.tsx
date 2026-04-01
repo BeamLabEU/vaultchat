@@ -200,6 +200,7 @@ export function Main({ config: initialConfig }: MainProps) {
             streamingContent={chat.streamingContent}
             error={chat.error}
             hasConversation={!!chat.conversation}
+            originalContent={chat.conversation?.originalContent}
             onSendMessage={handleSendMessage}
             onCancelStreaming={chat.cancelStreaming}
             scrollRef={chatScrollRef}

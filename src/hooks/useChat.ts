@@ -75,8 +75,16 @@ export function useChat(config: Config) {
       const userMessage: Message = { role: "user", content: text };
       const updatedMessages = [...conversation.messages, userMessage];
 
-      // Resolve wikilink context
+      // Resolve context: original file content + wikilinks
       let contextMessages: Message[] = [];
+
+      // Original non-chat content from the file — include as context
+      if (conversation.originalContent) {
+        contextMessages.push({
+          role: "context",
+          content: `**Original note content:**\n${conversation.originalContent}`,
+        });
+      }
 
       // Frontmatter context links
       if (conversation.frontmatter.context?.length) {

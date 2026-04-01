@@ -3,10 +3,16 @@ import type { Conversation, Message, Frontmatter } from "./types.ts";
 
 /**
  * Serialize a Conversation back to a markdown string.
+ * Original non-chat content is preserved between frontmatter and messages.
  */
 export function serializeConversation(conversation: Conversation): string {
   const frontmatterStr = serializeFrontmatter(conversation.frontmatter);
   const messagesStr = serializeMessages(conversation.messages);
+
+  if (conversation.originalContent) {
+    const separator = conversation.messages.length > 0 ? "\n\n-----\n" : "";
+    return frontmatterStr + "\n" + conversation.originalContent + "\n" + separator + messagesStr;
+  }
 
   return frontmatterStr + "\n" + messagesStr;
 }

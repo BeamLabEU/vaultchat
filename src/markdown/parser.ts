@@ -17,14 +17,21 @@ export function parseConversation(
 ): Conversation {
   const { data, content: body } = matter(content);
   const frontmatter = data as Frontmatter;
-  const messages = parseMessages(body);
+  const { messages, originalContent } = parseMessages(body);
 
-  return { frontmatter, messages, filePath };
+  return { frontmatter, messages, filePath, originalContent };
 }
 
-function parseMessages(body: string): Message[] {
+interface ParseResult {
+  messages: Message[];
+  /** Non-chat content that appeared before (or between) role-marked sections. */
+  originalContent?: string;
+}
+
+function parseMessages(body: string): ParseResult {
   const sections = splitOnSeparators(body);
   const messages: Message[] = [];
+  const nonChatSections: string[] = [];
 
   for (const section of sections) {
     const trimmed = section.trim();
@@ -38,11 +45,17 @@ function parseMessages(body: string): Message[] {
       const role = roleMatch[1] as MessageRole;
       const content = lines.slice(1).join("\n").trim();
       messages.push({ role, content });
+    } else {
+      // Non-chat content — preserve it
+      nonChatSections.push(trimmed);
     }
-    // Skip sections that don't start with a role marker
   }
 
-  return messages;
+  const originalContent = nonChatSections.length > 0
+    ? nonChatSections.join("\n\n---\n\n")
+    : undefined;
+
+  return { messages, originalContent };
 }
 
 /**
