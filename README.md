@@ -42,6 +42,22 @@ sudo mv vaultchat /usr/local/bin/
 
 Available binaries: `vaultchat-linux-x64`, `vaultchat-linux-arm64`, `vaultchat-darwin-x64`, `vaultchat-darwin-arm64`
 
+### Homebrew (macOS)
+
+Coming soon — `brew install beamlabeu/tap/vaultchat`
+
+### Updating
+
+Check for new releases:
+
+```bash
+vaultchat --check-update
+```
+
+VaultChat also checks for updates in the background when you launch the TUI — a subtle notification appears at the top if a newer version is available.
+
+To update manually, download the latest binary from [Releases](https://github.com/BeamLabEU/vaultchat/releases) and replace the old one.
+
 ## Setup
 
 On first run, VaultChat launches a setup wizard:
@@ -144,6 +160,29 @@ Then reload: `docker exec caddy caddy reload`
 ```
 
 Files use `###### role` headers (H6 — subtle, won't conflict with content) and `---`/`-----` separators. They look good in any markdown viewer.
+
+## CLI flags
+
+| Flag | Description |
+|------|-------------|
+| `--version`, `-v` | Print version and exit |
+| `--help`, `-h` | Show usage help |
+| `--check-update` | Check GitHub for a newer release |
+| `--doctor` | Run diagnostic checks (config, API key, provider reachability) |
+| `--doctor --json` | Same diagnostics, machine-readable JSON output |
+
+## Diagnostics (developers)
+
+If you're working from source, these scripts help catch environment issues early:
+
+```bash
+bun run smoke              # build + startup sanity check
+bun run doctor             # validate config, API key, provider reachability
+bun run doctor:json        # machine-readable JSON to stdout
+bun run doctor:report      # persist diagnostics to reports/doctor.json
+bun run hardening          # smoke + doctor
+bun run hardening:strict   # typecheck + hardening
+```
 
 ## Tech stack
 
