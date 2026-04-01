@@ -2,6 +2,15 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.5] - 2026-04-01
+
+### Fixed
+- File tree scroll position preserved when clicking items (no more jumping)
+- Empty row at bottom of file tree removed (viewport height corrected)
+- Streaming response no longer pushes message text around (fixed-height reserve area)
+- Reduced flicker: `React.memo` on FileTree, overflow clipping on streaming block
+- Update status icons: `↓` for downloading, `✓` for installed, `✗` for failed
+
 ## [0.2.4] - 2026-04-01
 
 ### Fixed
@@ -99,6 +108,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.5]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.5
 [0.2.4]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.4
 [0.2.3]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.3
 [0.2.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.2
