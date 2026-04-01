@@ -26,21 +26,25 @@ bun run dev
 
 ### Download binary (no runtime needed)
 
-Grab the latest binary for your platform from [Releases](https://github.com/BeamLabEU/vaultchat/releases):
+Grab the latest binary for your platform from [Releases](https://github.com/BeamLabEU/vaultchat/releases).
+
+**Linux x64:**
 
 ```bash
-# Linux x64
 curl -fsSL https://github.com/BeamLabEU/vaultchat/releases/latest/download/vaultchat-linux-x64 -o vaultchat
 chmod +x vaultchat
 sudo mv vaultchat /usr/local/bin/
+```
 
-# macOS Apple Silicon
+**macOS Apple Silicon:**
+
+```bash
 curl -fsSL https://github.com/BeamLabEU/vaultchat/releases/latest/download/vaultchat-darwin-arm64 -o vaultchat
 chmod +x vaultchat
 sudo mv vaultchat /usr/local/bin/
 ```
 
-Available binaries: `vaultchat-linux-x64`, `vaultchat-linux-arm64`, `vaultchat-darwin-x64`, `vaultchat-darwin-arm64`
+Also available: `vaultchat-linux-arm64`, `vaultchat-darwin-x64`
 
 ### Homebrew (macOS)
 
