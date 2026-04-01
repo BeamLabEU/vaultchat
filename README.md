@@ -33,7 +33,7 @@ Grab the latest binary for your platform from [Releases](https://github.com/Beam
 ```bash
 curl -fsSL https://github.com/BeamLabEU/vaultchat/releases/latest/download/vaultchat-linux-x64 -o vaultchat
 chmod +x vaultchat
-sudo mv vaultchat /usr/local/bin/
+mv vaultchat ~/.local/bin/        # or: sudo mv vaultchat /usr/local/bin/
 ```
 
 **macOS Apple Silicon:**
@@ -41,7 +41,7 @@ sudo mv vaultchat /usr/local/bin/
 ```bash
 curl -fsSL https://github.com/BeamLabEU/vaultchat/releases/latest/download/vaultchat-darwin-arm64 -o vaultchat
 chmod +x vaultchat
-sudo mv vaultchat /usr/local/bin/
+mv vaultchat ~/.local/bin/        # or: sudo mv vaultchat /usr/local/bin/
 ```
 
 Also available: `vaultchat-linux-arm64`, `vaultchat-darwin-x64`
