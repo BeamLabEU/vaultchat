@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Box, Text, useInput } from "ink";
 import type { FileEntry } from "../../vault/files.ts";
 
@@ -17,31 +17,40 @@ interface FileTreeProps {
 // Sidebar width=32, border=2, paddingX=2, leading space=1 → 27 chars for label
 const MAX_LABEL_WIDTH = 27;
 
-/** Compute scroll state for the file tree. Shared with Main for mouse click mapping. */
+/** Compute scroll state for the file tree. Shared with Main for mouse click mapping.
+ *  prevScrollOffset preserves current scroll position — only adjusts when selected item is off-screen. */
 export function computeFileTreeScroll(
   selectedIndex: number,
   totalItems: number,
   viewportHeight: number,
+  prevScrollOffset: number = 0,
 ): { scrollOffset: number; maxVisible: number; hasLess: boolean; hasMore: boolean } {
   const baseVisible = Math.max(1, viewportHeight - 3); // border + header
 
-  let scrollOffset = 0;
-  if (selectedIndex >= baseVisible) {
-    scrollOffset = selectedIndex - baseVisible + 1;
-  }
+  // Start from previous scroll position, clamped to valid range
+  let scrollOffset = Math.max(0, Math.min(prevScrollOffset, Math.max(0, totalItems - 1)));
 
+  // Estimate indicators to compute maxVisible
   let hasLess = scrollOffset > 0;
   let hasMore = scrollOffset + baseVisible < totalItems;
+  let maxVisible = Math.max(1, baseVisible - (hasLess ? 1 : 0) - (hasMore ? 1 : 0));
 
-  let maxVisible = baseVisible - (hasLess ? 1 : 0) - (hasMore ? 1 : 0);
-  maxVisible = Math.max(1, maxVisible);
-
-  // Recompute with final maxVisible
+  // Only adjust scroll if selected item is out of view
   if (selectedIndex >= scrollOffset + maxVisible) {
     scrollOffset = selectedIndex - maxVisible + 1;
   }
   if (selectedIndex < scrollOffset) {
     scrollOffset = selectedIndex;
+  }
+
+  // Recompute indicators with final offset
+  hasLess = scrollOffset > 0;
+  hasMore = scrollOffset + maxVisible < totalItems;
+  maxVisible = Math.max(1, baseVisible - (hasLess ? 1 : 0) - (hasMore ? 1 : 0));
+
+  // Final adjustment in case maxVisible changed
+  if (selectedIndex >= scrollOffset + maxVisible) {
+    scrollOffset = selectedIndex - maxVisible + 1;
   }
   hasLess = scrollOffset > 0;
   hasMore = scrollOffset + maxVisible < totalItems;
@@ -87,11 +96,14 @@ export function FileTree({
     ...mdFiles.map((f) => ({ label: f.name, key: "f:" + f.path, type: "file" as const })),
   ];
 
+  const prevScrollRef = useRef(0);
   const { scrollOffset, maxVisible, hasLess, hasMore } = computeFileTreeScroll(
     selectedIndex,
     items.length,
     viewportHeight,
+    prevScrollRef.current,
   );
+  prevScrollRef.current = scrollOffset;
 
   const visibleItems = items.slice(scrollOffset, scrollOffset + maxVisible);
 

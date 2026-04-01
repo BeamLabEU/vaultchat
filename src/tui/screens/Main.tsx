@@ -44,10 +44,12 @@ export function Main({ config: initialConfig }: MainProps) {
   // Compute file tree scroll state (shared with FileTree component)
   const fileTreeViewportHeight = termHeight - 2;
   const fileTreeTotalItems = fileTree.files.length + 2; // +2 for "New Chat" and ".."
-  const fileTreeScroll = useMemo(
-    () => computeFileTreeScroll(fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight),
-    [fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight],
-  );
+  const fileTreePrevScrollRef = useRef(0);
+  const fileTreeScroll = useMemo(() => {
+    const result = computeFileTreeScroll(fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight, fileTreePrevScrollRef.current);
+    fileTreePrevScrollRef.current = result.scrollOffset;
+    return result;
+  }, [fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight]);
 
   // Map mouse Y coordinate to file tree item index, or null if not on an item
   const fileTreeItemIndexAtY = useCallback((y: number): number | null => {
