@@ -17,6 +17,38 @@ interface FileTreeProps {
 // Sidebar width=32, border=2, paddingX=2, leading space=1 → 27 chars for label
 const MAX_LABEL_WIDTH = 27;
 
+/** Compute scroll state for the file tree. Shared with Main for mouse click mapping. */
+export function computeFileTreeScroll(
+  selectedIndex: number,
+  totalItems: number,
+  viewportHeight: number,
+): { scrollOffset: number; maxVisible: number; hasLess: boolean; hasMore: boolean } {
+  const baseVisible = Math.max(1, viewportHeight - 3); // border + header
+
+  let scrollOffset = 0;
+  if (selectedIndex >= baseVisible) {
+    scrollOffset = selectedIndex - baseVisible + 1;
+  }
+
+  let hasLess = scrollOffset > 0;
+  let hasMore = scrollOffset + baseVisible < totalItems;
+
+  let maxVisible = baseVisible - (hasLess ? 1 : 0) - (hasMore ? 1 : 0);
+  maxVisible = Math.max(1, maxVisible);
+
+  // Recompute with final maxVisible
+  if (selectedIndex >= scrollOffset + maxVisible) {
+    scrollOffset = selectedIndex - maxVisible + 1;
+  }
+  if (selectedIndex < scrollOffset) {
+    scrollOffset = selectedIndex;
+  }
+  hasLess = scrollOffset > 0;
+  hasMore = scrollOffset + maxVisible < totalItems;
+
+  return { scrollOffset, maxVisible, hasLess, hasMore };
+}
+
 function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return text.slice(0, max - 1) + "…";
@@ -55,20 +87,13 @@ export function FileTree({
     ...mdFiles.map((f) => ({ label: f.name, key: "f:" + f.path, type: "file" as const })),
   ];
 
-  // Scrolling: keep selected item visible
-  const totalItems = items.length;
-  const maxVisible = Math.max(1, viewportHeight - 2); // account for border
-  let scrollOffset = 0;
-  if (selectedIndex >= scrollOffset + maxVisible) {
-    scrollOffset = selectedIndex - maxVisible + 1;
-  }
-  if (selectedIndex < scrollOffset) {
-    scrollOffset = selectedIndex;
-  }
+  const { scrollOffset, maxVisible, hasLess, hasMore } = computeFileTreeScroll(
+    selectedIndex,
+    items.length,
+    viewportHeight,
+  );
 
   const visibleItems = items.slice(scrollOffset, scrollOffset + maxVisible);
-  const hasMore = scrollOffset + maxVisible < totalItems;
-  const hasLess = scrollOffset > 0;
 
   const fileCount = mdFiles.length;
   const dirCount = dirs.length;

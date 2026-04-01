@@ -2,6 +2,15 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.4] - 2026-04-01
+
+### Fixed
+- File tree header no longer overlaps with first item when list is scrollable
+- Mouse click now selects the correct item when file tree is scrolled
+- Streaming response no longer overlaps with chat messages
+- Reduced screen flashing: incremental rendering, alternate screen buffer, hidden cursor
+- Removed unnecessary "restart" message from CLI `vaultchat update` command
+
 ## [0.2.3] - 2026-04-01
 
 ### Added
@@ -90,6 +99,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.4]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.4
 [0.2.3]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.3
 [0.2.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.2
 [0.2.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.1

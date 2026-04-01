@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Box, Text, useInput, useApp } from "ink";
-import { FileTree } from "../components/FileTree.tsx";
+import { FileTree, computeFileTreeScroll } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
 import { ModelSwitcher } from "../components/ModelSwitcher.tsx";
 import { Settings } from "./Settings.tsx";
@@ -41,28 +41,24 @@ export function Main({ config: initialConfig }: MainProps) {
   // Double-click detection for file tree
   const lastClickRef = useRef<{ index: number; time: number }>({ index: -1, time: 0 });
 
-  // Compute file tree scroll offset (mirrors FileTree component logic)
-  const fileTreeMaxVisible = Math.max(1, (termHeight - 3) - 2);
+  // Compute file tree scroll state (shared with FileTree component)
+  const fileTreeViewportHeight = termHeight - 3;
   const fileTreeTotalItems = fileTree.files.length + 2; // +2 for "New Chat" and ".."
-  const fileTreeScrollOffset = useMemo(() => {
-    let offset = 0;
-    if (fileTree.selectedIndex >= offset + fileTreeMaxVisible) {
-      offset = fileTree.selectedIndex - fileTreeMaxVisible + 1;
-    }
-    return offset;
-  }, [fileTree.selectedIndex, fileTreeMaxVisible]);
-  const fileTreeHasLess = fileTreeScrollOffset > 0;
+  const fileTreeScroll = useMemo(
+    () => computeFileTreeScroll(fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight),
+    [fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight],
+  );
 
   // Map mouse Y coordinate to file tree item index, or null if not on an item
   const fileTreeItemIndexAtY = useCallback((y: number): number | null => {
-    // Layout: y=1 status bar, y=2 top border, y=3 header, y=4+ items
-    const firstItemY = fileTreeHasLess ? 5 : 4; // "↑ more" takes a row
+    // Layout: y=1 status bar, y=2 top border, y=3 header, y=4+ items (or y=5 if "↑ more")
+    const firstItemY = fileTreeScroll.hasLess ? 5 : 4;
     const row = y - firstItemY;
-    if (row < 0) return null;
-    const index = fileTreeScrollOffset + row;
+    if (row < 0 || row >= fileTreeScroll.maxVisible) return null;
+    const index = fileTreeScroll.scrollOffset + row;
     if (index >= fileTreeTotalItems) return null;
     return index;
-  }, [fileTreeScrollOffset, fileTreeHasLess, fileTreeTotalItems]);
+  }, [fileTreeScroll, fileTreeTotalItems]);
 
   // Mouse support: scroll wheel + click to switch panels + click items in tree
   useMouse((event) => {

@@ -144,8 +144,15 @@ export function ChatView({
     },
   );
 
+  // When streaming, reserve lines for the streaming block (header + content/spinner)
+  const streamingLines = isStreaming ? Math.min(
+    Math.max(2, (streamingContent ? streamingContent.split("\n").length : 0) + 2),
+    Math.floor(contentHeight / 2),
+  ) : 0;
+  const messageHeight = contentHeight - streamingLines;
+
   // Join visible lines into a single string for one <Text> render
-  const visibleLines = allLines.slice(actualOffset, actualOffset + contentHeight);
+  const visibleLines = allLines.slice(actualOffset, actualOffset + messageHeight);
   const visibleText = ANSI_RESET + visibleLines.join("\n");
   const hasHiddenAbove = actualOffset > 0;
 

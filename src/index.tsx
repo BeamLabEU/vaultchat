@@ -67,5 +67,17 @@ if (args.includes("--update") || cmd === "update") {
 const { render } = await import("ink");
 const { App } = await import("./tui/App.tsx");
 
-const { waitUntilExit } = render(<App />);
+// Hide cursor and enter alternate screen buffer for clean rendering
+process.stdout.write("\x1b[?25l");   // hide cursor
+process.stdout.write("\x1b[?1049h"); // alternate screen buffer
+
+const { waitUntilExit } = render(<App />, {
+  exitOnCtrlC: false,       // we handle Ctrl+C ourselves
+  incrementalRendering: true, // only redraw changed lines to reduce flicker
+});
+
 await waitUntilExit();
+
+// Restore terminal
+process.stdout.write("\x1b[?1049l"); // leave alternate screen buffer
+process.stdout.write("\x1b[?25h");   // show cursor
