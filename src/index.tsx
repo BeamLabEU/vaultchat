@@ -1,4 +1,4 @@
-import { getVersion, checkForUpdate, getReleasesUrl } from "./version.ts";
+import { getVersion, checkForUpdate, getReleasesUrl, selfUpdate } from "./version.ts";
 
 const args = process.argv.slice(2);
 
@@ -13,6 +13,7 @@ if (args.includes("--help") || args.includes("-h")) {
 Usage:
   vaultchat              Launch the TUI in the current directory
   vaultchat --version    Print version and exit
+  vaultchat --update     Download and install the latest version
   vaultchat --check-update  Check for newer releases on GitHub
   vaultchat --doctor     Run diagnostic checks (config, API key, provider)
   vaultchat --help       Show this help message`);
@@ -38,12 +39,25 @@ if (args.includes("--check-update")) {
     const info = await checkForUpdate();
     if (info.updateAvailable) {
       console.log(`Update available: v${info.current} → v${info.latest}`);
-      console.log(`Download: ${info.releaseUrl}`);
+      console.log(`Run: vaultchat --update`);
     } else {
       console.log(`You're on the latest version (v${info.current})`);
     }
   } catch {
     console.error(`Could not check for updates. Visit ${getReleasesUrl()}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (args.includes("--update")) {
+  try {
+    const result = await selfUpdate((msg) => console.log(msg));
+    console.log(`\n✓ Updated: v${result.oldVersion} → v${result.newVersion}`);
+    console.log(`  Restart vaultchat to use the new version.`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Update failed";
+    console.error(msg);
     process.exit(1);
   }
   process.exit(0);

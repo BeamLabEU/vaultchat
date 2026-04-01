@@ -164,7 +164,7 @@ export function Main({ config: initialConfig }: MainProps) {
           </Text>
           <Text dimColor> v{getVersion()}</Text>
           {updateInfo && (
-            <Text color="yellow"> ↑ v{updateInfo.latest} available</Text>
+            <Text color="yellow"> ↑ v{updateInfo.latest} available (run --update)</Text>
           )}
         </Box>
         <Text dimColor>

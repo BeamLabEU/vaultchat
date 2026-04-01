@@ -2,6 +2,16 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.1] - 2026-04-01
+
+### Added
+- `--update` flag for self-updating: downloads latest binary and replaces itself in-place
+- Safety guard preventing self-update from overwriting the bun/node runtime when running from source
+- TUI update notification now shows `(run --update)` hint
+
+### Changed
+- `--check-update` output now suggests `vaultchat --update` instead of a download link
+
 ## [0.2.0] - 2026-04-01
 
 ### Added
@@ -59,6 +69,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.0
 [0.1.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.2
 [0.1.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.1
