@@ -42,7 +42,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const lastClickRef = useRef<{ index: number; time: number }>({ index: -1, time: 0 });
 
   // Compute file tree scroll state (shared with FileTree component)
-  const fileTreeViewportHeight = termHeight - 3;
+  const fileTreeViewportHeight = termHeight - 2;
   const fileTreeTotalItems = fileTree.files.length + 2; // +2 for "New Chat" and ".."
   const fileTreeScroll = useMemo(
     () => computeFileTreeScroll(fileTree.selectedIndex, fileTreeTotalItems, fileTreeViewportHeight),
@@ -254,7 +254,7 @@ export function Main({ config: initialConfig }: MainProps) {
             files={fileTree.files}
             selectedIndex={fileTree.selectedIndex}
             focused={activePanel === "files"}
-            viewportHeight={termHeight - 3}
+            viewportHeight={termHeight - 2}
             onMoveUp={fileTree.moveUp}
             onMoveDown={fileTree.moveDown}
             onJumpToStart={fileTree.jumpToStart}
@@ -266,7 +266,7 @@ export function Main({ config: initialConfig }: MainProps) {
             title={chat.title}
             messages={chat.messages}
             focused={activePanel === "chat"}
-            viewportHeight={termHeight - 3}
+            viewportHeight={termHeight - 2}
             isStreaming={chat.isStreaming}
             streamingContent={chat.streamingContent}
             error={chat.error}
