@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Box, Text, useInput, useApp } from "ink";
 import { FileTree } from "../components/FileTree.tsx";
 import { ChatView } from "../components/ChatView.tsx";
@@ -38,12 +38,57 @@ export function Main({ config: initialConfig }: MainProps) {
   // Ref-based scroll for ChatView — avoids re-rendering Main on mouse scroll
   const chatScrollRef = useRef<{ scrollBy: (delta: number) => void } | null>(null);
 
-  // Mouse support: scroll wheel + click to switch panels
+  // Double-click detection for file tree
+  const lastClickRef = useRef<{ index: number; time: number }>({ index: -1, time: 0 });
+
+  // Compute file tree scroll offset (mirrors FileTree component logic)
+  const fileTreeMaxVisible = Math.max(1, (termHeight - 3) - 2);
+  const fileTreeTotalItems = fileTree.files.length + 2; // +2 for "New Chat" and ".."
+  const fileTreeScrollOffset = useMemo(() => {
+    let offset = 0;
+    if (fileTree.selectedIndex >= offset + fileTreeMaxVisible) {
+      offset = fileTree.selectedIndex - fileTreeMaxVisible + 1;
+    }
+    return offset;
+  }, [fileTree.selectedIndex, fileTreeMaxVisible]);
+  const fileTreeHasLess = fileTreeScrollOffset > 0;
+
+  // Map mouse Y coordinate to file tree item index, or null if not on an item
+  const fileTreeItemIndexAtY = useCallback((y: number): number | null => {
+    // Layout: y=1 status bar, y=2 top border, y=3 header, y=4+ items
+    const firstItemY = fileTreeHasLess ? 5 : 4; // "↑ more" takes a row
+    const row = y - firstItemY;
+    if (row < 0) return null;
+    const index = fileTreeScrollOffset + row;
+    if (index >= fileTreeTotalItems) return null;
+    return index;
+  }, [fileTreeScrollOffset, fileTreeHasLess, fileTreeTotalItems]);
+
+  // Mouse support: scroll wheel + click to switch panels + click items in tree
   useMouse((event) => {
     if (showModelSwitcher || showSettings) return;
 
     if (event.type === "press" && event.button === 0) {
-      setActivePanel(event.x <= FILE_TREE_WIDTH ? "files" : "chat");
+      if (event.x <= FILE_TREE_WIDTH) {
+        setActivePanel("files");
+        const index = fileTreeItemIndexAtY(event.y);
+        if (index !== null) {
+          const now = Date.now();
+          const last = lastClickRef.current;
+          if (last.index === index && now - last.time < 400) {
+            // Double click — open the item
+            fileTree.select(index);
+            handleOpenItemAtIndex(index);
+            lastClickRef.current = { index: -1, time: 0 };
+          } else {
+            // Single click — highlight the item
+            fileTree.select(index);
+            lastClickRef.current = { index, time: now };
+          }
+        }
+      } else {
+        setActivePanel("chat");
+      }
     }
 
     if (event.type === "wheelUp") {
@@ -104,8 +149,9 @@ export function Main({ config: initialConfig }: MainProps) {
     setActivePanel("chat");
   }, [fileTree.dir, config, fileTree]);
 
-  const handleFileSelect = useCallback(async () => {
-    if (fileTree.isNewChatSelected) {
+  // Open/navigate the item at a given index (0=New Chat, 1=.., 2+=entries)
+  const handleOpenItemAtIndex = useCallback(async (index: number) => {
+    if (index === 0) {
       const newPath = await createNewChat(
         fileTree.dir,
         config.activeModel,
@@ -114,15 +160,23 @@ export function Main({ config: initialConfig }: MainProps) {
       await fileTree.refresh();
       setCurrentFile(newPath);
       setActivePanel("chat");
-    } else if (fileTree.isParentDirSelected) {
+    } else if (index === 1) {
       fileTree.navigateUp();
-    } else if (fileTree.selectedEntry?.isDirectory) {
-      fileTree.navigateToDir(fileTree.selectedEntry.path);
-    } else if (fileTree.selectedFile) {
-      setCurrentFile(fileTree.selectedFile.path);
-      setActivePanel("chat");
+    } else {
+      const entry = fileTree.files[index - 2];
+      if (!entry) return;
+      if (entry.isDirectory) {
+        fileTree.navigateToDir(entry.path);
+      } else {
+        setCurrentFile(entry.path);
+        setActivePanel("chat");
+      }
     }
   }, [fileTree, config]);
+
+  const handleFileSelect = useCallback(async () => {
+    await handleOpenItemAtIndex(fileTree.selectedIndex);
+  }, [fileTree.selectedIndex, handleOpenItemAtIndex]);
 
   const handleSendMessage = useCallback(
     (text: string) => {
@@ -201,6 +255,8 @@ export function Main({ config: initialConfig }: MainProps) {
             viewportHeight={termHeight - 3}
             onMoveUp={fileTree.moveUp}
             onMoveDown={fileTree.moveDown}
+            onJumpToStart={fileTree.jumpToStart}
+            onJumpToEnd={fileTree.jumpToEnd}
             onSelect={handleFileSelect}
           />
 

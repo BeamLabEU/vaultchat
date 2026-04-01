@@ -9,6 +9,8 @@ interface FileTreeProps {
   viewportHeight: number;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  onJumpToStart: () => void;
+  onJumpToEnd: () => void;
   onSelect: () => void;
 }
 
@@ -27,6 +29,8 @@ export function FileTree({
   viewportHeight,
   onMoveUp,
   onMoveDown,
+  onJumpToStart,
+  onJumpToEnd,
   onSelect,
 }: FileTreeProps) {
   useInput(
@@ -34,6 +38,8 @@ export function FileTree({
       if (!focused) return;
       if (key.upArrow || input === "k") onMoveUp();
       if (key.downArrow || input === "j") onMoveDown();
+      if (key.home || input === "g") onJumpToStart();
+      if (key.end || input === "G") onJumpToEnd();
       if (key.return) onSelect();
     },
   );

@@ -45,6 +45,14 @@ export function useFileTree(initialDir: string) {
     setSelectedIndex((i) => Math.min(files.length + 1, i + 1));
   }, [files.length]);
 
+  const jumpToStart = useCallback(() => {
+    setSelectedIndex(0);
+  }, []);
+
+  const jumpToEnd = useCallback(() => {
+    setSelectedIndex(files.length + 1);
+  }, [files.length]);
+
   const navigateToDir = useCallback((newDir: string) => {
     setDir(newDir);
     setSelectedIndex(0);
@@ -74,6 +82,8 @@ export function useFileTree(initialDir: string) {
     select,
     moveUp,
     moveDown,
+    jumpToStart,
+    jumpToEnd,
     navigateToDir,
     navigateUp,
     refresh,

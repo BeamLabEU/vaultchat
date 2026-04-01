@@ -2,6 +2,14 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.2] - 2026-04-01
+
+### Added
+- Single click to select items in file tree
+- Double click to open files, navigate into directories, or go up with `..`
+- Home key (or `g`) jumps to first item in file tree
+- End key (or `G`) jumps to last item in file tree
+
 ## [0.2.1] - 2026-04-01
 
 ### Added
@@ -69,6 +77,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.2
 [0.2.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.0
 [0.1.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.1.2
