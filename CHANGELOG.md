@@ -2,6 +2,19 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.3] - 2026-04-01
+
+### Added
+- Auto-update on launch: binary is downloaded in background, status bar shows "restart to use" when ready
+- Subcommand CLI style: `vaultchat update`, `vaultchat doctor`, `vaultchat check-update`, `vaultchat help`
+
+### Fixed
+- File tree header rendering bug ("Files" label merging with first item)
+- Removed duplicate update banner from App.tsx
+
+### Changed
+- Old `--flags` still work alongside new subcommands
+
 ## [0.2.2] - 2026-04-01
 
 ### Added
@@ -77,6 +90,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.3]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.3
 [0.2.2]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.2
 [0.2.1]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.1
 [0.2.0]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.0

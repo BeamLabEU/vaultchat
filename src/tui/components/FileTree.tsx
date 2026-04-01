@@ -82,14 +82,12 @@ export function FileTree({
       borderColor={focused ? "cyan" : "gray"}
       paddingX={1}
     >
-      <Box marginBottom={0}>
-        <Text bold color="cyan">
-          Files
-        </Text>
+      <Text>
+        <Text bold color="cyan">Files</Text>
         {(fileCount > 0 || dirCount > 0) && (
           <Text dimColor> ({dirCount > 0 ? `${dirCount}d, ${fileCount}f` : `${fileCount}`})</Text>
         )}
-      </Box>
+      </Text>
 
       {hasLess && <Text dimColor>  ↑ more</Text>}
 

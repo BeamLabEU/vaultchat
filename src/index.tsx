@@ -1,26 +1,27 @@
 import { getVersion, checkForUpdate, getReleasesUrl, selfUpdate } from "./version.ts";
 
 const args = process.argv.slice(2);
+const cmd = args[0] ?? "";
 
-if (args.includes("--version") || args.includes("-v")) {
+if (args.includes("--version") || args.includes("-v") || cmd === "version") {
   console.log(`vaultchat ${getVersion()}`);
   process.exit(0);
 }
 
-if (args.includes("--help") || args.includes("-h")) {
+if (args.includes("--help") || args.includes("-h") || cmd === "help") {
   console.log(`vaultchat ${getVersion()} — TUI AI chat client for Obsidian vaults
 
 Usage:
   vaultchat              Launch the TUI in the current directory
-  vaultchat --version    Print version and exit
-  vaultchat --update     Download and install the latest version
-  vaultchat --check-update  Check for newer releases on GitHub
-  vaultchat --doctor     Run diagnostic checks (config, API key, provider)
-  vaultchat --help       Show this help message`);
+  vaultchat update       Download and install the latest version
+  vaultchat check-update Check for newer releases on GitHub
+  vaultchat doctor       Run diagnostic checks (config, API key, provider)
+  vaultchat version      Print version and exit
+  vaultchat help         Show this help message`);
   process.exit(0);
 }
 
-if (args.includes("--doctor")) {
+if (args.includes("--doctor") || cmd === "doctor") {
   const { runAllChecks, buildReport, formatResults } = await import("./doctor.ts");
   const results = await runAllChecks();
   const report = buildReport(results);
@@ -34,12 +35,12 @@ if (args.includes("--doctor")) {
   process.exit(report.failed > 0 ? 1 : 0);
 }
 
-if (args.includes("--check-update")) {
+if (args.includes("--check-update") || cmd === "check-update") {
   try {
     const info = await checkForUpdate();
     if (info.updateAvailable) {
       console.log(`Update available: v${info.current} → v${info.latest}`);
-      console.log(`Run: vaultchat --update`);
+      console.log(`Run: vaultchat update`);
     } else {
       console.log(`You're on the latest version (v${info.current})`);
     }
@@ -50,7 +51,7 @@ if (args.includes("--check-update")) {
   process.exit(0);
 }
 
-if (args.includes("--update")) {
+if (args.includes("--update") || cmd === "update") {
   try {
     const result = await selfUpdate((msg) => console.log(msg));
     console.log(`\n✓ Updated: v${result.oldVersion} → v${result.newVersion}`);

@@ -11,7 +11,7 @@ import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
 import { createNewChat } from "../../vault/files.ts";
 import { saveConfig, type Config } from "../../vault/config.ts";
 import { getVersion } from "../../version.ts";
-import { useUpdateNotification } from "../../hooks/useUpdateNotification.ts";
+import { useAutoUpdate } from "../../hooks/useUpdateNotification.ts";
 
 const FILE_TREE_WIDTH = 32;
 
@@ -30,7 +30,7 @@ export function Main({ config: initialConfig }: MainProps) {
   const { rows: termHeight } = useTerminalSize();
 
   const { exit } = useApp();
-  const updateInfo = useUpdateNotification();
+  const updateState = useAutoUpdate();
   const cwd = process.cwd();
   const fileTree = useFileTree(cwd);
   const chat = useChat(config);
@@ -217,8 +217,14 @@ export function Main({ config: initialConfig }: MainProps) {
             VaultChat
           </Text>
           <Text dimColor> v{getVersion()}</Text>
-          {updateInfo && (
-            <Text color="yellow"> ↑ v{updateInfo.latest} available (run --update)</Text>
+          {updateState?.status === "downloading" && (
+            <Text color="yellow"> ↑ updating to v{updateState.newVersion}...</Text>
+          )}
+          {updateState?.status === "ready" && (
+            <Text color="green"> ↑ v{updateState.newVersion} installed — restart to use</Text>
+          )}
+          {updateState?.status === "failed" && (
+            <Text color="red"> ↑ update failed (run vaultchat update)</Text>
           )}
         </Box>
         <Text dimColor>
