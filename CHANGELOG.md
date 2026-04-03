@@ -2,6 +2,12 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.8] - 2026-04-03
+
+### Fixed
+- Terminal resize now properly clears and redraws the entire screen
+- Previously only handled width decrease; now handles all resize events
+
 ## [0.2.7] - 2026-04-03
 
 ### Fixed
@@ -131,6 +137,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.8]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.8
 [0.2.7]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.7
 [0.2.6]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.6
 [0.2.5]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.5
