@@ -74,7 +74,7 @@ function renderMessagesToLines(
   return lines;
 }
 
-export function ChatView({
+export const ChatView = React.memo(function ChatView({
   title,
   messages,
   focused,
@@ -91,12 +91,15 @@ export function ChatView({
   const { columns: termColumns } = useTerminalSize();
   const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
+  // Key to force-reset TextInput after submit (clears internal state)
+  const [inputKey, setInputKey] = useState(0);
 
   // Panel width: terminal width minus file tree (32) minus chat borders (2) + padding (2) + safety margin (2)
   const panelWidth = Math.max(20, termColumns - 32 - 8);
 
-  // title(1) + title margin(1) + scroll indicator(1) + input border(1) + input(1) + input border(1) + bottom border(1) = 7
-  const contentHeight = Math.max(1, viewportHeight - 7);
+  // title(1) + title margin(1) + scroll indicator(1) + input area (max 8: border(2) + status(1) + up to 5 text lines) = 11
+  const INPUT_MAX_HEIGHT = 8;
+  const contentHeight = Math.max(1, viewportHeight - 3 - INPUT_MAX_HEIGHT);
 
   // Pre-render messages to lines
   const allLines = useMemo(() => {
@@ -205,27 +208,37 @@ export function ChatView({
             )}
           </Box>
 
-          <Box borderStyle="single" borderColor="gray" paddingX={1}>
-            {isStreaming ? (
+          <Box
+            borderStyle="single"
+            borderColor={focused && !isStreaming ? "blue" : "gray"}
+            paddingX={1}
+            flexDirection="column"
+            height={INPUT_MAX_HEIGHT}
+            overflow="hidden"
+          >
+            {isStreaming && (
               <Text dimColor>Streaming... (Escape to cancel)</Text>
-            ) : focused ? (
-              <Box>
-                <Text color="blue" bold>{">"} </Text>
-                <TextInput
-                  placeholder="Type a message..."
-                  onSubmit={(value) => {
-                    if (value.trim()) {
-                      onSendMessage(value.trim());
-                    }
-                  }}
-                />
-              </Box>
-            ) : (
-              <Text dimColor>Tab to focus and type a message...</Text>
             )}
+            {!focused && !isStreaming && (
+              <Text dimColor>Click or Tab to type</Text>
+            )}
+            <Box>
+              <Text color={focused && !isStreaming ? "blue" : "gray"} bold={focused && !isStreaming}>{">"} </Text>
+              <TextInput
+                key={inputKey}
+                isDisabled={!focused || isStreaming}
+                placeholder="Type a message..."
+                onSubmit={(value) => {
+                  if (value.trim()) {
+                    onSendMessage(value.trim());
+                    setInputKey((k) => k + 1);
+                  }
+                }}
+              />
+            </Box>
           </Box>
         </>
       )}
     </Box>
   );
-}
+});

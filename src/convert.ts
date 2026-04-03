@@ -42,8 +42,8 @@ function walkMessageChain(messages: Record<string, OpenWebUIMessage>): OpenWebUI
   let current: OpenWebUIMessage | undefined = root;
   while (current) {
     chain.push(current);
-    const nextId = current.childrenIds?.[0];
-    current = nextId ? messages[nextId] : undefined;
+    const nextId: string | undefined = current.childrenIds?.[0];
+    current = nextId !== undefined ? messages[nextId] : undefined;
   }
   return chain;
 }
@@ -82,8 +82,9 @@ function convertPlainText(raw: string, filename: string): { slug: string; conver
   const blocks = raw.split(/^### (USER|ASSISTANT)\s*$/m);
   const messages: Message[] = [];
   for (let i = 1; i < blocks.length; i += 2) {
-    const role = blocks[i].toLowerCase() === "user" ? "user" : "assistant";
-    const content = (blocks[i + 1] || "").trim();
+    const roleStr = blocks[i]!;
+    const role = roleStr.toLowerCase() === "user" ? "user" : "assistant";
+    const content = (blocks[i + 1] ?? "").trim();
     if (content) messages.push({ role: role as Message["role"], content });
   }
 
@@ -128,7 +129,7 @@ export async function runConvert(args: string[]): Promise<void> {
   }
 
   const outputIdx = args.indexOf("--output-dir");
-  const outputDir = outputIdx !== -1 ? args[outputIdx + 1] : ".";
+  const outputDir = outputIdx !== -1 && args[outputIdx + 1] ? args[outputIdx + 1]! : ".";
   fs.mkdirSync(outputDir, { recursive: true });
 
   const raw = fs.readFileSync(inputFile, "utf-8");

@@ -18,6 +18,9 @@ export function useChat(config: Config) {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const messageCountRef = useRef(0);
+  // Throttle streaming updates to reduce render frequency
+  const streamingThrottleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingContentRef = useRef("");
 
   const loadConversation = useCallback(async (filePath: string) => {
     try {
@@ -140,7 +143,14 @@ export function useChat(config: Config) {
           onChunk: (chunk) => {
             if (chunk.content) {
               fullContent += chunk.content;
-              setStreamingContent(fullContent);
+              pendingContentRef.current = fullContent;
+              // Throttle React state updates to ~50ms to reduce render churn
+              if (!streamingThrottleRef.current) {
+                streamingThrottleRef.current = setTimeout(() => {
+                  setStreamingContent(pendingContentRef.current);
+                  streamingThrottleRef.current = null;
+                }, 50);
+              }
             }
           },
         });
@@ -152,6 +162,12 @@ export function useChat(config: Config) {
             err instanceof Error ? err.message : "Unknown error occurred";
           setError(msg);
         }
+      }
+
+      // Flush any pending throttled update
+      if (streamingThrottleRef.current) {
+        clearTimeout(streamingThrottleRef.current);
+        streamingThrottleRef.current = null;
       }
 
       // Add assistant message and save

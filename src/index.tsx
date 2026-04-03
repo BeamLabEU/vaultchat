@@ -78,6 +78,19 @@ const { App } = await import("./tui/App.tsx");
 process.stdout.write("\x1b[?25l");   // hide cursor
 process.stdout.write("\x1b[?1049h"); // alternate screen buffer
 
+// Suppress cursor show/hide that Ink emits on every render cycle — we keep
+// the cursor permanently hidden, so these sequences just cause flicker.
+const CURSOR_SHOW = "\x1b[?25h";
+const CURSOR_HIDE = "\x1b[?25l";
+const origWrite = process.stdout.write.bind(process.stdout);
+(process.stdout as any).write = function (chunk: any, ...args: any[]) {
+  if (typeof chunk === "string") {
+    chunk = chunk.replaceAll(CURSOR_SHOW, "").replaceAll(CURSOR_HIDE, "");
+    if (chunk.length === 0) return true;
+  }
+  return origWrite(chunk, ...args);
+};
+
 const { waitUntilExit } = render(<App />, {
   exitOnCtrlC: false,       // we handle Ctrl+C ourselves
   incrementalRendering: true, // only redraw changed lines to reduce flicker
