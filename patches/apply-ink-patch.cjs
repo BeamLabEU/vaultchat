@@ -1,7 +1,7 @@
 /**
- * Patch Ink's fullscreen renderer to use incremental updates instead of
- * clearTerminal + full rewrite. This eliminates the primary cause of flicker
- * in fullscreen TUI apps.
+ * Patch Ink's renderer to fix two issues:
+ * 1. Fullscreen flicker: use incremental line-diff instead of clearTerminal
+ * 2. Resize handling: always clear on any resize (not just width decrease)
  *
  * See: https://github.com/vadimdemedes/ink/pull/894
  */
@@ -17,7 +17,10 @@ let code = fs.readFileSync(inkPath, "utf-8");
 // Already patched?
 if (code.includes("PATCHED by VaultChat")) process.exit(0);
 
-const oldBlock = `        if (this.lastOutputHeight >= this.options.stdout.rows) {
+let patched = false;
+
+// Patch 1: Fullscreen flicker fix
+const oldFullscreen = `        if (this.lastOutputHeight >= this.options.stdout.rows) {
             const sync = shouldSynchronize(this.options.stdout);
             if (sync) {
                 this.options.stdout.write(bsu);
@@ -33,7 +36,7 @@ const oldBlock = `        if (this.lastOutputHeight >= this.options.stdout.rows)
             return;
         }`;
 
-const newBlock = `        // [PATCHED by VaultChat] Route fullscreen frames through the incremental
+const newFullscreen = `        // [PATCHED by VaultChat] Route fullscreen frames through the incremental
         // renderer instead of clearTerminal + full rewrite (fixes flicker).
         // See: https://github.com/vadimdemedes/ink/pull/894
         if (this.lastOutputHeight >= this.options.stdout.rows) {
@@ -46,11 +49,45 @@ const newBlock = `        // [PATCHED by VaultChat] Route fullscreen frames thro
             return;
         }`;
 
-if (!code.includes(oldBlock)) {
-  console.log("  Ink patch: target code not found (version may have changed)");
-  process.exit(0);
+if (code.includes(oldFullscreen)) {
+  code = code.replace(oldFullscreen, newFullscreen);
+  patched = true;
+  console.log("  Patched ink fullscreen flicker fix");
 }
 
-code = code.replace(oldBlock, newBlock);
-fs.writeFileSync(inkPath, code);
-console.log("  Patched ink fullscreen flicker fix");
+// Patch 2: Resize handler — always clear on any resize
+const oldResize = `    resized = () => {
+        const currentWidth = this.getTerminalWidth();
+        if (currentWidth < this.lastTerminalWidth) {
+            // We clear the screen when decreasing terminal width to prevent duplicate overlapping re-renders.
+            this.log.clear();
+            this.lastOutput = '';
+            this.lastOutputToRender = '';
+        }
+        this.calculateLayout();
+        this.onRender();
+        this.lastTerminalWidth = currentWidth;
+    };`;
+
+const newResize = `    resized = () => {
+        // [PATCHED by VaultChat] Always clear on any resize (width OR height change)
+        // to prevent stale content and visual artifacts.
+        this.log.clear();
+        this.lastOutput = '';
+        this.lastOutputToRender = '';
+        this.lastTerminalWidth = this.getTerminalWidth();
+        this.calculateLayout();
+        this.onRender();
+    };`;
+
+if (code.includes(oldResize)) {
+  code = code.replace(oldResize, newResize);
+  patched = true;
+  console.log("  Patched ink resize handler");
+}
+
+if (patched) {
+  fs.writeFileSync(inkPath, code);
+} else {
+  console.log("  Ink patch: target code not found (version may have changed)");
+}
