@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.9] - 2026-04-03
+
+### Fixed
+- Resize no longer leaves stale content (full terminal clear instead of partial line erase)
+
 ## [0.2.8] - 2026-04-03
 
 ### Fixed
@@ -137,6 +142,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.9]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.9
 [0.2.8]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.8
 [0.2.7]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.7
 [0.2.6]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.6
