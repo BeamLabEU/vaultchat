@@ -20,7 +20,8 @@
     "doctor:json": "bun run scripts/doctor.ts --json",
     "doctor:report": "bun run scripts/doctor.ts --out reports/doctor.json",
     "hardening": "bun run smoke && bun run doctor",
-    "hardening:strict": "bunx tsc --noEmit && bun run hardening"
+    "hardening:strict": "bunx tsc --noEmit && bun run hardening",
+    "postinstall": "node patches/apply-ink-patch.cjs"
   },
   "devDependencies": {
     "@types/bun": "latest",
