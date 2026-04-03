@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Box, Text, useInput } from "ink";
-import { TextInput } from "@inkjs/ui";
+import { PromptInput } from "./PromptInput.tsx";
 import { StreamingText } from "./StreamingText.tsx";
 import { renderMarkdown, wrapLines, setRenderWidth } from "../../markdown/render.ts";
 import { useTerminalSize } from "../../hooks/useTerminalSize.ts";
@@ -91,14 +91,15 @@ export const ChatView = React.memo(function ChatView({
   const { columns: termColumns } = useTerminalSize();
   const [scrollOffset, setScrollOffset] = useState(-1);
   const prevMessageCount = useRef(messages.length);
-  // Key to force-reset TextInput after submit (clears internal state)
-  const [inputKey, setInputKey] = useState(0);
-
   // Panel width: terminal width minus file tree (32) minus chat borders (2) + padding (2) + safety margin (2)
   const panelWidth = Math.max(20, termColumns - 32 - 8);
 
-  // title(1) + title margin(1) + scroll indicator(1) + input area (max 8: border(2) + status(1) + up to 5 text lines) = 11
+  // Input area: border(2) + status line(1) + up to 5 text lines = 8
   const INPUT_MAX_HEIGHT = 8;
+  const INPUT_TEXT_LINES = INPUT_MAX_HEIGHT - 2; // subtract borders
+  // Width available for prompt text: panel minus "> " prefix (2 chars)
+  const promptTextWidth = Math.max(10, panelWidth - 2);
+  // title(1) + title margin(1) + scroll indicator(1) + input area(8) = 11
   const contentHeight = Math.max(1, viewportHeight - 3 - INPUT_MAX_HEIGHT);
 
   // Pre-render messages to lines
@@ -139,8 +140,9 @@ export const ChatView = React.memo(function ChatView({
   useInput(
     (input, key) => {
       if (!focused) return;
-      if (key.upArrow) scrollBy(-5);
-      if (key.downArrow) scrollBy(5);
+      // PageUp/PageDown scroll chat history (Up/Down reserved for prompt navigation)
+      if (key.pageUp) scrollBy(-contentHeight);
+      if (key.pageDown) scrollBy(contentHeight);
       if (key.escape && isStreaming) {
         onCancelStreaming();
       }
@@ -224,16 +226,12 @@ export const ChatView = React.memo(function ChatView({
             )}
             <Box>
               <Text color={focused && !isStreaming ? "blue" : "gray"} bold={focused && !isStreaming}>{">"} </Text>
-              <TextInput
-                key={inputKey}
+              <PromptInput
+                width={promptTextWidth}
+                maxLines={INPUT_TEXT_LINES}
                 isDisabled={!focused || isStreaming}
                 placeholder="Type a message..."
-                onSubmit={(value) => {
-                  if (value.trim()) {
-                    onSendMessage(value.trim());
-                    setInputKey((k) => k + 1);
-                  }
-                }}
+                onSubmit={onSendMessage}
               />
             </Box>
           </Box>

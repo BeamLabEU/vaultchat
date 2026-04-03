@@ -288,7 +288,7 @@ export function Main({ config: initialConfig }: MainProps) {
             ? "Tab: switch tabs | ↑↓: navigate | Enter: select | Esc: close"
             : showModelSwitcher
               ? "↑↓: navigate | Enter: select | Esc: close"
-              : "Tab: panels | Ctrl+N: new chat | Ctrl+M: model | Ctrl+S: settings | Ctrl+C: quit"}
+              : "Tab: panels | PgUp/PgDn: scroll | Ctrl+N: new | Ctrl+M: model | Ctrl+S: settings | Ctrl+C: quit"}
         </Text>
       </Box>
     </Box>
