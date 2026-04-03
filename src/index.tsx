@@ -78,15 +78,32 @@ const { App } = await import("./tui/App.tsx");
 process.stdout.write("\x1b[?25l");   // hide cursor
 process.stdout.write("\x1b[?1049h"); // alternate screen buffer
 
-// Suppress cursor show/hide that Ink emits on every render cycle — we keep
-// the cursor permanently hidden, so these sequences just cause flicker.
+// Synchronized Output (DEC mode 2026): batch all writes within a render cycle
+// so the terminal buffers them and paints atomically — eliminates flicker on
+// Kitty, Ghostty, WezTerm, iTerm2 3.5+, and other supporting terminals.
+// Terminals that don't support it silently ignore the sequences.
+const SYNC_START = "\x1b[?2026h";
+const SYNC_END   = "\x1b[?2026l";
 const CURSOR_SHOW = "\x1b[?25h";
 const CURSOR_HIDE = "\x1b[?25l";
 const origWrite = process.stdout.write.bind(process.stdout);
+let syncActive = false;
 (process.stdout as any).write = function (chunk: any, ...args: any[]) {
   if (typeof chunk === "string") {
+    // Strip cursor show/hide — we keep cursor permanently hidden
     chunk = chunk.replaceAll(CURSOR_SHOW, "").replaceAll(CURSOR_HIDE, "");
     if (chunk.length === 0) return true;
+
+    // Begin synchronized update on first write of a render cycle;
+    // end it on the next microtask (after all synchronous writes finish)
+    if (!syncActive) {
+      syncActive = true;
+      origWrite(SYNC_START);
+      queueMicrotask(() => {
+        origWrite(SYNC_END);
+        syncActive = false;
+      });
+    }
   }
   return origWrite(chunk, ...args);
 };
@@ -98,6 +115,7 @@ const { waitUntilExit } = render(<App />, {
 
 await waitUntilExit();
 
-// Restore terminal
-process.stdout.write("\x1b[?1049l"); // leave alternate screen buffer
-process.stdout.write("\x1b[?25h");   // show cursor
+// Restore terminal — bypass our wrapper to ensure sequences aren't stripped
+origWrite("\x1b[?2026l");  // end any pending sync block
+origWrite("\x1b[?1049l");  // leave alternate screen buffer
+origWrite("\x1b[?25h");    // show cursor
