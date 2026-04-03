@@ -70,11 +70,14 @@ const oldResize = `    resized = () => {
     };`;
 
 const newResize = `    resized = () => {
-        // [PATCHED by VaultChat] Always clear on any resize (width OR height change)
-        // to prevent stale content and visual artifacts.
+        // [PATCHED by VaultChat] Full terminal clear on resize to prevent
+        // stale content when terminal gets taller (log.clear only erases
+        // lines it knows about, missing off-screen content that reappears).
         this.log.clear();
+        this.options.stdout.write(ansiEscapes.clearTerminal);
         this.lastOutput = '';
         this.lastOutputToRender = '';
+        this.lastOutputHeight = 0;
         this.lastTerminalWidth = this.getTerminalWidth();
         this.calculateLayout();
         this.onRender();
