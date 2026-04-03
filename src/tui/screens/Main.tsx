@@ -127,6 +127,10 @@ export function Main({ config: initialConfig }: MainProps) {
     if (key.ctrl && input === "n") {
       handleNewChat();
     }
+    if (key.ctrl && input === "l") {
+      // Full terminal redraw
+      process.stdout.write("\x1b[2J\x1b[3J\x1b[H");
+    }
     if (key.ctrl && input === "c") {
       if (chat.isStreaming) {
         chat.cancelStreaming();
@@ -288,7 +292,7 @@ export function Main({ config: initialConfig }: MainProps) {
             ? "Tab: switch tabs | ↑↓: navigate | Enter: select | Esc: close"
             : showModelSwitcher
               ? "↑↓: navigate | Enter: select | Esc: close"
-              : "Tab: panels | PgUp/PgDn: scroll | Ctrl+N: new | Ctrl+M: model | Ctrl+S: settings | Ctrl+C: quit"}
+              : "Tab: panels | PgUp/PgDn: scroll | ^N: new | ^M: model | ^L: redraw | ^S: settings | ^C: quit"}
         </Text>
       </Box>
     </Box>
