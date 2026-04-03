@@ -2,6 +2,13 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.7] - 2026-04-03
+
+### Fixed
+- Patched Ink's fullscreen renderer: incremental line-diff instead of clearTerminal + full rewrite (root cause of flicker)
+- Removed redundant sync output wrapper (Ink handles DEC 2026 natively)
+- Patch auto-applied via postinstall script, survives `bun install`
+
 ## [0.2.6] - 2026-04-03
 
 ### Added
@@ -124,6 +131,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.7]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.7
 [0.2.6]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.6
 [0.2.5]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.5
 [0.2.4]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.4
