@@ -16,8 +16,15 @@ Usage:
   vaultchat update       Download and install the latest version
   vaultchat check-update Check for newer releases on GitHub
   vaultchat doctor       Run diagnostic checks (config, API key, provider)
+  vaultchat convert      Convert exported chats to VaultChat markdown
   vaultchat version      Print version and exit
   vaultchat help         Show this help message`);
+  process.exit(0);
+}
+
+if (args.includes("--convert") || cmd === "convert") {
+  const { runConvert } = await import("./convert.ts");
+  await runConvert(args);
   process.exit(0);
 }
 
