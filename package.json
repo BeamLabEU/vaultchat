@@ -1,6 +1,6 @@
 {
   "name": "vaultchat",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "TUI AI chat client that stores conversations as markdown files",
   "module": "src/index.tsx",
   "type": "module",
