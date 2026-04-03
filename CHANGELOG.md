@@ -2,6 +2,22 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.2.6] - 2026-04-03
+
+### Added
+- `vaultchat convert` command — import Open WebUI chat exports (JSON and TXT)
+- Custom `PromptInput` component with Up/Down cursor navigation across wrapped lines
+- Synchronized Output (DEC mode 2026) for flicker-free rendering on modern terminals
+- Flicker analysis doc (`docs/flicker-analysis.md`) with root cause and future options
+
+### Fixed
+- Typed text no longer lost when clicking file tree or pressing Tab (input stays mounted)
+- Up/Down arrows now navigate within the prompt instead of scrolling chat
+- Chat history scrolling moved to PageUp/PageDown
+- Input area capped at 6 visible lines with scroll-to-cursor
+- Streaming state updates throttled to ~50ms to reduce render churn
+- Cursor show/hide thrashing from Ink suppressed
+
 ## [0.2.5] - 2026-04-01
 
 ### Fixed
@@ -108,6 +124,7 @@ All notable changes to VaultChat are documented here.
 - Cross-platform binaries (Linux x64/arm64, macOS x64/arm64)
 - GitHub Actions release workflow on version tags
 
+[0.2.6]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.6
 [0.2.5]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.5
 [0.2.4]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.4
 [0.2.3]: https://github.com/BeamLabEU/vaultchat/releases/tag/v0.2.3
