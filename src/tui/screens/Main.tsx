@@ -226,7 +226,7 @@ export function Main({ config: initialConfig }: MainProps) {
             <Text color="green"> ✓ v{updateState.newVersion} installed — restart to use</Text>
           )}
           {updateState?.status === "failed" && (
-            <Text color="red"> ✗ update failed (run vaultchat update)</Text>
+            <Text color="red"> ✗ update failed: {updateState.error ?? "unknown error"}</Text>
           )}
         </Box>
         <Text dimColor>

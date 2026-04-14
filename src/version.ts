@@ -1,4 +1,4 @@
-const VERSION = "0.3.0";
+const VERSION = "0.3.1";
 const REPO_OWNER = "BeamLabEU";
 const REPO_NAME = "vaultchat";
 
@@ -102,6 +102,26 @@ export async function selfUpdate(
   }
 
   const binary = await res.arrayBuffer();
+
+  // Verify SHA256 against the matching .sha256 asset (published since v0.3.1).
+  // If missing, fall through — older releases did not ship checksums.
+  const shaAsset = release.assets.find((a) => a.name === `${assetName}.sha256`);
+  if (shaAsset) {
+    log("Verifying checksum...");
+    const shaRes = await fetch(shaAsset.browser_download_url, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!shaRes.ok) {
+      throw new Error(`Checksum fetch failed: HTTP ${shaRes.status}`);
+    }
+    const expected = (await shaRes.text()).trim().split(/\s+/)[0];
+    const actual = Bun.SHA256.hash(binary, "hex");
+    if (expected !== actual) {
+      throw new Error(
+        `Checksum mismatch: expected ${expected}, got ${actual}. Download corrupted — try again.`,
+      );
+    }
+  }
 
   // Determine where the current binary lives
   const currentBin = process.execPath;

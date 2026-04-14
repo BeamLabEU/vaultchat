@@ -12,26 +12,38 @@ export function useAutoUpdate(): UpdateState | null {
   const [state, setState] = useState<UpdateState | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
+      let phase: "checking" | "downloading" = "checking";
+      let newVersion: string | undefined;
+
       try {
         const info = await checkForUpdate();
-        if (!info.updateAvailable) {
-          return; // Don't set state — nothing to show
-        }
+        if (cancelled) return;
+        if (!info.updateAvailable) return;
 
-        setState({ status: "downloading", newVersion: info.latest });
+        phase = "downloading";
+        newVersion = info.latest;
+        setState({ status: "downloading", newVersion });
 
         const result = await selfUpdate();
+        if (cancelled) return;
         setState({ status: "ready", newVersion: result.newVersion });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Update failed";
-        // Only show error if we got past the check phase (i.e., there was an update)
-        if (state?.status === "downloading") {
-          setState((s) => s ? { ...s, status: "failed", error: msg } : null);
-        }
-        // Silently ignore check failures or "already latest"
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : String(err);
+        // Surface failures from both the check phase (DNS/API/rate-limit) and
+        // the download phase (permission denied on rename, download timeout).
+        // Earlier versions swallowed both: the check phase by design, the
+        // download phase by a stale-closure bug.
+        setState({ status: "failed", newVersion, error: msg });
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return state;

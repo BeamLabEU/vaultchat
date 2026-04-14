@@ -2,6 +2,24 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.1] - 2026-04-14
+
+### Fixed
+- macOS binaries are now ad-hoc signed in CI. v0.3.0 shipped unsigned, which caused Apple Silicon to SIGKILL the binary at launch with no error.
+- Self-update now surfaces errors in the status bar (previously a stale-closure bug left the UI stuck on "downloading..." forever when rename or download failed).
+
+### Added
+- Release workflow publishes `.sha256` files alongside each binary.
+- `selfUpdate()` verifies the downloaded binary's SHA256 against the release checksum before replacing the running binary. Older releases without checksums are accepted unchanged.
+
+### Note
+- If you are on v0.3.0 for macOS and can't launch it, self-update is unreachable. Re-install manually:
+  ```
+  curl -L -o ~/.local/bin/vaultchat \
+    https://github.com/BeamLabEU/vaultchat/releases/download/v0.3.1/vaultchat-darwin-arm64
+  chmod +x ~/.local/bin/vaultchat
+  ```
+
 ## [0.3.0] - 2026-04-14
 
 ### Changed
