@@ -50,7 +50,13 @@ jobs:
       # anything that was there, so we sign here on the mac runners.
       - name: Ad-hoc sign macOS binary
         if: runner.os == 'macOS'
-        run: codesign --force --sign - --timestamp=none dist/${{ matrix.artifact }}
+        run: |
+          # Bun's compile output may carry a malformed signature blob that
+          # codesign refuses to overwrite ("invalid or unsupported format").
+          # Strip anything that's there, then apply a clean ad-hoc signature.
+          codesign --remove-signature dist/${{ matrix.artifact }} 2>/dev/null || true
+          codesign --force --deep --sign - --timestamp=none dist/${{ matrix.artifact }}
+          codesign -dv dist/${{ matrix.artifact }}
 
       - name: Generate SHA256 checksum
         run: |
