@@ -2,6 +2,16 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.0] - 2026-04-14
+
+### Changed
+- Upgraded Ink 6.8.0 → 7.0.0 (major): requires Node 22+ and React 19.2+
+- Upgraded React 19.2.4 → 19.2.5
+- Upgraded @types/bun 1.3.11 → 1.3.12 (pairs with Bun runtime 1.3.12)
+
+### Removed
+- `patches/ink-fullscreen-flicker.patch` and the `postinstall` patcher — Ink 7's new `shouldClearTerminalForFrame` heuristic makes the steady-state fullscreen flicker patch obsolete. Resize patch dropped pending real-world testing; Ctrl+L (added in 0.2.10) remains as the manual redraw escape hatch.
+
 ## [0.2.10] - 2026-04-03
 
 ### Added
