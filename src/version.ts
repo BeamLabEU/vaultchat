@@ -25,17 +25,18 @@ export function compareSemver(a: string, b: string): number {
   return 0;
 }
 
+export interface ReleaseData {
+  tag_name: string;
+  html_url: string;
+  assets: { name: string; browser_download_url: string }[];
+}
+
 export interface UpdateInfo {
   current: string;
   latest: string;
   updateAvailable: boolean;
   releaseUrl: string;
-}
-
-interface ReleaseData {
-  tag_name: string;
-  html_url: string;
-  assets: { name: string; browser_download_url: string }[];
+  release: ReleaseData;
 }
 
 /** Check GitHub Releases API for a newer version. */
@@ -48,6 +49,7 @@ export async function checkForUpdate(): Promise<UpdateInfo> {
     latest,
     updateAvailable: compareSemver(latest, VERSION) > 0,
     releaseUrl: data.html_url,
+    release: data,
   };
 }
 
@@ -74,11 +76,17 @@ function getAssetName(): string {
 /** Download the latest binary and replace the current executable in-place. */
 export async function selfUpdate(
   onProgress?: (msg: string) => void,
+  prefetchedRelease?: ReleaseData,
 ): Promise<{ oldVersion: string; newVersion: string }> {
   const log = onProgress ?? (() => {});
 
-  log("Checking for updates...");
-  const release = await fetchLatestRelease();
+  let release: ReleaseData;
+  if (prefetchedRelease) {
+    release = prefetchedRelease;
+  } else {
+    log("Checking for updates...");
+    release = await fetchLatestRelease();
+  }
   const latest = release.tag_name.replace(/^v/, "");
 
   if (compareSemver(latest, VERSION) <= 0) {
@@ -114,9 +122,14 @@ export async function selfUpdate(
     if (!shaRes.ok) {
       throw new Error(`Checksum fetch failed: HTTP ${shaRes.status}`);
     }
-    const expected = (await shaRes.text()).trim().split(/\s+/)[0];
+    const expected = (await shaRes.text()).trim().split(/\s+/)[0] ?? "";
+    if (!/^[0-9a-f]{64}$/i.test(expected)) {
+      throw new Error(
+        `Invalid checksum format from ${shaAsset.browser_download_url} (expected 64-char hex)`,
+      );
+    }
     const actual = Bun.SHA256.hash(binary, "hex");
-    if (expected !== actual) {
+    if (expected.toLowerCase() !== actual.toLowerCase()) {
       throw new Error(
         `Checksum mismatch: expected ${expected}, got ${actual}. Download corrupted — try again.`,
       );

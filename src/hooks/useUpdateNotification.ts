@@ -15,7 +15,6 @@ export function useAutoUpdate(): UpdateState | null {
     let cancelled = false;
 
     (async () => {
-      let phase: "checking" | "downloading" = "checking";
       let newVersion: string | undefined;
 
       try {
@@ -23,11 +22,10 @@ export function useAutoUpdate(): UpdateState | null {
         if (cancelled) return;
         if (!info.updateAvailable) return;
 
-        phase = "downloading";
         newVersion = info.latest;
         setState({ status: "downloading", newVersion });
 
-        const result = await selfUpdate();
+        const result = await selfUpdate(undefined, info.release);
         if (cancelled) return;
         setState({ status: "ready", newVersion: result.newVersion });
       } catch (err) {
