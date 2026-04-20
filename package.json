@@ -28,15 +28,15 @@
     "react-devtools-core": "^7.0.1"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^6"
   },
   "dependencies": {
     "@inkjs/ui": "^2.0.0",
     "cli-highlight": "^2.1.11",
     "gray-matter": "^4.0.3",
-    "ink": "^7.0.0",
-    "marked": "9",
-    "marked-terminal": "6",
+    "ink": "^7.0.1",
+    "marked": "^18",
+    "marked-terminal": "^7",
     "react": "^19.2.5"
   }
 }
