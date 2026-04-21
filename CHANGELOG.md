@@ -2,6 +2,19 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.2] - 2026-04-21
+
+### Fixed
+- Auto-update path no longer hits the GitHub releases API twice per launch — `checkForUpdate` now passes the release payload directly to `selfUpdate`, halving API load and rate-limit risk.
+- SHA256 checksum string from the `.sha256` asset is validated as 64-char hex before comparison, with a clearer error when the response is empty, HTML, or malformed.
+- Removed dead `phase` variable in `useAutoUpdate` (the `cancelled` flag already handles the race it was meant to guard).
+
+### Changed
+- Ink 7.0.0 → 7.0.1 (restores `useApp().exit` typing; Escape now respects `disableFocus()`).
+- marked 9 → 18 and marked-terminal 6 → 7 (usage unchanged; no behavior difference for our `marked.use() + marked.parse()` pattern).
+- TypeScript peer range `^5` → `^6`.
+- Bumped documented Bun runtime target to 1.3.13 (CI uses `bun-version: latest`).
+
 ## [0.3.1] - 2026-04-14
 
 ### Fixed
