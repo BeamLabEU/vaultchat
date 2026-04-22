@@ -27,6 +27,8 @@ export function Main({ config: initialConfig }: MainProps) {
   const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [showModelSwitcher, setShowModelSwitcher] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [debug, setDebug] = useState(false);
+  const [lastKey, setLastKey] = useState<string>("—");
   const { rows: termHeight } = useTerminalSize();
 
   const { exit } = useApp();
@@ -114,6 +116,27 @@ export function Main({ config: initialConfig }: MainProps) {
   }, [currentFile]);
 
   useInput((input, key) => {
+    // Record last keypress for debug overlay (always, even under modals)
+    const parts: string[] = [];
+    if (key.ctrl) parts.push("ctrl");
+    if (key.shift) parts.push("shift");
+    if (key.meta) parts.push("meta");
+    if (key.upArrow) parts.push("up");
+    if (key.downArrow) parts.push("down");
+    if (key.leftArrow) parts.push("left");
+    if (key.rightArrow) parts.push("right");
+    if (key.return) parts.push("return");
+    if (key.tab) parts.push("tab");
+    if (key.escape) parts.push("esc");
+    if (key.pageUp) parts.push("pgup");
+    if (key.pageDown) parts.push("pgdn");
+    if (key.home) parts.push("home");
+    if (key.end) parts.push("end");
+    if (key.backspace) parts.push("bksp");
+    if (key.delete) parts.push("del");
+    if (input && !key.ctrl) parts.push(JSON.stringify(input));
+    setLastKey(parts.join("+") || "?");
+
     if (showModelSwitcher || showSettings) return;
     if (key.tab) {
       setActivePanel((p) => (p === "files" ? "chat" : "files"));
@@ -126,6 +149,9 @@ export function Main({ config: initialConfig }: MainProps) {
     }
     if (key.ctrl && input === "n") {
       handleNewChat();
+    }
+    if (key.ctrl && input === "d") {
+      setDebug((d) => !d);
     }
     if (key.ctrl && input === "l") {
       // Full terminal redraw
@@ -285,6 +311,15 @@ export function Main({ config: initialConfig }: MainProps) {
         </Box>
       )}
 
+      {/* Debug overlay (Ctrl+D to toggle) */}
+      {debug && (
+        <Box paddingX={1}>
+          <Text color="magenta">
+            [dbg] panel={activePanel} dir={fileTree.dir.split("/").pop() || "/"} files={fileTree.files.length} sel={fileTree.selectedIndex} key={lastKey} term={termHeight}
+          </Text>
+        </Box>
+      )}
+
       {/* Bottom bar */}
       <Box paddingX={1}>
         <Text dimColor>
@@ -292,7 +327,7 @@ export function Main({ config: initialConfig }: MainProps) {
             ? "Tab: switch tabs | ↑↓: navigate | Enter: select | Esc: close"
             : showModelSwitcher
               ? "↑↓: navigate | Enter: select | Esc: close"
-              : "Tab: panels | PgUp/PgDn: scroll | ^N: new | ^M: model | ^L: redraw | ^S: settings | ^C: quit"}
+              : "Tab: panels | PgUp/PgDn: scroll | ^N: new | ^M: model | ^L: redraw | ^D: debug | ^S: settings | ^C: quit"}
         </Text>
       </Box>
     </Box>

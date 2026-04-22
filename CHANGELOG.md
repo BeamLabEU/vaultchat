@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.3] - 2026-04-22
+
+### Added
+- Debug overlay toggle (`Ctrl+D`) in the main view — shows active panel, current directory, file count, selected index, last keypress, and terminal height. Useful for diagnosing file-tree navigation issues.
+
 ## [0.3.2] - 2026-04-21
 
 ### Fixed
