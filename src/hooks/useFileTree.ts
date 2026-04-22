@@ -15,6 +15,10 @@ export function useFileTree(initialDir: string) {
   filesLenRef.current = files.length;
   const selectedIndexRef = useRef(0);
   selectedIndexRef.current = selectedIndex;
+  const filesRef = useRef<FileEntry[]>(files);
+  filesRef.current = files;
+  const dirRef = useRef(initialDir);
+  dirRef.current = dir;
 
   const refresh = useCallback(async () => {
     const list = await listEntries(dir);
@@ -64,11 +68,12 @@ export function useFileTree(initialDir: string) {
   }, []);
 
   const navigateUp = useCallback(() => {
-    const parent = dirname(dir);
-    if (parent !== dir) {
+    const current = dirRef.current;
+    const parent = dirname(current);
+    if (parent !== current) {
       navigateToDir(parent);
     }
-  }, [dir, navigateToDir]);
+  }, [navigateToDir]);
 
   // Index layout: 0 = "New Chat", 1 = "..", 2+ = entries
   const selectedEntry = selectedIndex >= 2 ? files[selectedIndex - 2] ?? null : null;
@@ -81,6 +86,8 @@ export function useFileTree(initialDir: string) {
     files,
     selectedIndex,
     selectedIndexRef,
+    filesRef,
+    dirRef,
     selectedFile,
     selectedEntry,
     isNewChatSelected,

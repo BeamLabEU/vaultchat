@@ -177,11 +177,14 @@ export function Main({ config: initialConfig }: MainProps) {
     setActivePanel("chat");
   }, [fileTree.dir, config, fileTree]);
 
-  // Open/navigate the item at a given index (0=New Chat, 1=.., 2+=entries)
+  // Open/navigate the item at a given index (0=New Chat, 1=.., 2+=entries).
+  // Reads files/dir via refs — the caller (Ink's useInput via React.memo)
+  // can retain a closure where fileTree.files was still [], which would make
+  // fileTree.files[index-2] silently return undefined.
   const handleOpenItemAtIndex = useCallback(async (index: number) => {
     if (index === 0) {
       const newPath = await createNewChat(
-        fileTree.dir,
+        fileTree.dirRef.current,
         config.activeModel,
         config.activeProvider
       );
@@ -191,7 +194,7 @@ export function Main({ config: initialConfig }: MainProps) {
     } else if (index === 1) {
       fileTree.navigateUp();
     } else {
-      const entry = fileTree.files[index - 2];
+      const entry = fileTree.filesRef.current[index - 2];
       if (!entry) return;
       if (entry.isDirectory) {
         fileTree.navigateToDir(entry.path);

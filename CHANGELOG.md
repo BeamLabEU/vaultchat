@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.6] - 2026-04-22
+
+### Fixed
+- Enter on a directory or file silently did nothing after v0.3.5 stopped it from routing to "New Chat". `handleOpenItemAtIndex` read `fileTree.files[index-2]` from a stale closure where `files` was still `[]`, so the lookup returned `undefined` and early-returned. Same root cause as previous Enter/DOWN bugs — Ink's `useInput` holding a first-render closure past `React.memo` boundaries. `useFileTree` now exposes `filesRef` and `dirRef`, and `handleOpenItemAtIndex`/`navigateUp` read through them.
+
 ## [0.3.5] - 2026-04-22
 
 ### Fixed
