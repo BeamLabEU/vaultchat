@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.7] - 2026-04-22
+
+### Changed
+- Entering a subdirectory now lands the selection on `..` instead of the `+ New Chat` row, so a second Enter immediately pops back up the tree.
+
 ## [0.3.6] - 2026-04-22
 
 ### Fixed

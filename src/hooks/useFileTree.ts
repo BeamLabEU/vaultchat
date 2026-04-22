@@ -64,7 +64,8 @@ export function useFileTree(initialDir: string) {
 
   const navigateToDir = useCallback((newDir: string) => {
     setDir(newDir);
-    setSelectedIndex(0);
+    // Land on ".." so the user can hit Enter again to pop back out.
+    setSelectedIndex(1);
   }, []);
 
   const navigateUp = useCallback(() => {
