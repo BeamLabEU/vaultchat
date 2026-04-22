@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.4] - 2026-04-22
+
+### Fixed
+- File tree DOWN/END navigation clamped at index 1 (`..`) when entries existed. Stale `files.length` captured in `useCallback` closures made Ink's `useInput` handler keep reading `0` even after the directory loaded. `moveDown`, `jumpToEnd`, and `select` now read the count via a ref, so they always use the current value without re-creating the callback.
+
 ## [0.3.3] - 2026-04-22
 
 ### Added

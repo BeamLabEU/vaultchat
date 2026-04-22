@@ -8,6 +8,11 @@ export function useFileTree(initialDir: string) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Ref mirror of files.length so stable useCallbacks always read the latest
+  // count without re-creating (and invalidating Ink's useInput handler closure).
+  const filesLenRef = useRef(0);
+  filesLenRef.current = files.length;
+
   const refresh = useCallback(async () => {
     const list = await listEntries(dir);
     setFiles(list);
@@ -27,14 +32,11 @@ export function useFileTree(initialDir: string) {
     };
   }, [dir, refresh]);
 
-  const select = useCallback(
-    (index: number) => {
-      // +2 for "New Chat" at 0 and ".." at 1
-      const maxIndex = files.length + 1;
-      setSelectedIndex(Math.max(0, Math.min(index, maxIndex)));
-    },
-    [files.length]
-  );
+  const select = useCallback((index: number) => {
+    // +2 for "New Chat" at 0 and ".." at 1
+    const maxIndex = filesLenRef.current + 1;
+    setSelectedIndex(Math.max(0, Math.min(index, maxIndex)));
+  }, []);
 
   const moveUp = useCallback(() => {
     setSelectedIndex((i) => Math.max(0, i - 1));
@@ -42,16 +44,16 @@ export function useFileTree(initialDir: string) {
 
   const moveDown = useCallback(() => {
     // +1 for "New Chat", +1 for ".."
-    setSelectedIndex((i) => Math.min(files.length + 1, i + 1));
-  }, [files.length]);
+    setSelectedIndex((i) => Math.min(filesLenRef.current + 1, i + 1));
+  }, []);
 
   const jumpToStart = useCallback(() => {
     setSelectedIndex(0);
   }, []);
 
   const jumpToEnd = useCallback(() => {
-    setSelectedIndex(files.length + 1);
-  }, [files.length]);
+    setSelectedIndex(filesLenRef.current + 1);
+  }, []);
 
   const navigateToDir = useCallback((newDir: string) => {
     setDir(newDir);
