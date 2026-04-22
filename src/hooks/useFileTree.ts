@@ -8,10 +8,13 @@ export function useFileTree(initialDir: string) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Ref mirror of files.length so stable useCallbacks always read the latest
-  // count without re-creating (and invalidating Ink's useInput handler closure).
+  // Ref mirrors so stable useCallbacks always read the latest values without
+  // re-creating (and relying on Ink's useInput closure to update, which can
+  // miss updates when a React.memo'd consumer short-circuits re-renders).
   const filesLenRef = useRef(0);
   filesLenRef.current = files.length;
+  const selectedIndexRef = useRef(0);
+  selectedIndexRef.current = selectedIndex;
 
   const refresh = useCallback(async () => {
     const list = await listEntries(dir);
@@ -77,6 +80,7 @@ export function useFileTree(initialDir: string) {
     dir,
     files,
     selectedIndex,
+    selectedIndexRef,
     selectedFile,
     selectedEntry,
     isNewChatSelected,

@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.5] - 2026-04-22
+
+### Fixed
+- Enter on a directory or file always created a new chat instead of entering the directory / opening the file. Same stale-closure pattern as v0.3.4: `handleFileSelect` read `selectedIndex` through a `useCallback` closure that Ink's `useInput` kept pinned to the first render (where `selectedIndex=0`, the "+ New Chat" row). Now reads via a ref exported from `useFileTree`.
+
 ## [0.3.4] - 2026-04-22
 
 ### Fixed

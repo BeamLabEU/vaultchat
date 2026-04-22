@@ -203,8 +203,11 @@ export function Main({ config: initialConfig }: MainProps) {
   }, [fileTree, config]);
 
   const handleFileSelect = useCallback(async () => {
-    await handleOpenItemAtIndex(fileTree.selectedIndex);
-  }, [fileTree.selectedIndex, handleOpenItemAtIndex]);
+    // Read via ref: Ink's useInput handler, when consumed through a
+    // React.memo child, can retain an older closure where selectedIndex=0
+    // (which would incorrectly route Enter to the "New Chat" branch).
+    await handleOpenItemAtIndex(fileTree.selectedIndexRef.current);
+  }, [handleOpenItemAtIndex, fileTree.selectedIndexRef]);
 
   const handleSendMessage = useCallback(
     (text: string) => {
