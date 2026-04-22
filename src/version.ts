@@ -1,4 +1,4 @@
-const VERSION = "0.3.7";
+const VERSION = "0.3.8";
 const REPO_OWNER = "BeamLabEU";
 const REPO_NAME = "vaultchat";
 

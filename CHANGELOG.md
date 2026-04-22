@@ -2,6 +2,11 @@
 
 All notable changes to VaultChat are documented here.
 
+## [0.3.8] - 2026-04-22
+
+### Changed
+- Navigating up with `..` now highlights the directory you just came from in the parent listing, instead of leaving the selection on `..`. Makes browsing deep trees feel stateful.
+
 ## [0.3.7] - 2026-04-22
 
 ### Changed

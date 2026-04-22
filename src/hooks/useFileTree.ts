@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { listEntries, watchDirectory, type FileEntry } from "../vault/files.ts";
-import { dirname } from "node:path";
+import { dirname, basename } from "node:path";
 
 export function useFileTree(initialDir: string) {
   const [dir, setDir] = useState(initialDir);
@@ -19,10 +19,19 @@ export function useFileTree(initialDir: string) {
   filesRef.current = files;
   const dirRef = useRef(initialDir);
   dirRef.current = dir;
+  // When navigateUp sets this, the next refresh lands selection on the
+  // matching entry (the directory we just came out of) instead of "..".
+  const pendingSelectNameRef = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     const list = await listEntries(dir);
     setFiles(list);
+    const pending = pendingSelectNameRef.current;
+    if (pending !== null) {
+      const idx = list.findIndex((f) => f.name === pending);
+      if (idx >= 0) setSelectedIndex(idx + 2); // +2 for "New Chat" and ".."
+      pendingSelectNameRef.current = null;
+    }
   }, [dir]);
 
   // Initial load + watch
@@ -64,7 +73,8 @@ export function useFileTree(initialDir: string) {
 
   const navigateToDir = useCallback((newDir: string) => {
     setDir(newDir);
-    // Land on ".." so the user can hit Enter again to pop back out.
+    // Default: land on ".." so Enter pops back. If navigateUp has stashed
+    // a pending name, refresh() will overwrite this with the matched index.
     setSelectedIndex(1);
   }, []);
 
@@ -72,6 +82,9 @@ export function useFileTree(initialDir: string) {
     const current = dirRef.current;
     const parent = dirname(current);
     if (parent !== current) {
+      // Remember which dir we just left so refresh() can highlight it in
+      // the parent listing — the user doesn't have to relocate it by eye.
+      pendingSelectNameRef.current = basename(current);
       navigateToDir(parent);
     }
   }, [navigateToDir]);
